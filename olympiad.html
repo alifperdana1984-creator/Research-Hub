@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eduversal Research Hub | Olympiad Tracker</title>
+<script src="firebase-config.js"></script>
+<script>
+  if (!window.ENV) window.ENV = {
+    FIREBASE_API_KEY:            "__FIREBASE_API_KEY__",
+    FIREBASE_AUTH_DOMAIN:        "__FIREBASE_AUTH_DOMAIN__",
+    FIREBASE_PROJECT_ID:         "__FIREBASE_PROJECT_ID__",
+    FIREBASE_STORAGE_BUCKET:     "__FIREBASE_STORAGE_BUCKET__",
+    FIREBASE_MESSAGING_SENDER_ID:"__FIREBASE_MESSAGING_SENDER_ID__",
+    FIREBASE_APP_ID:             "__FIREBASE_APP_ID__",
+  };
+</script>
+<script type="module" src="auth-guard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F8FAFC}
+#back-btn{
+  position:fixed;top:14px;left:16px;z-index:9999;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;
+  background:rgba(15,23,42,0.85);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;
+  color:#fff;font-size:13px;font-weight:500;
+  text-decoration:none;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  transition:background 0.2s;
+}
+#back-btn:hover{background:rgba(15,23,42,0.97);}
+#back-btn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+</head>
+<body>
+<a id="back-btn" href="index.html">
+  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  Research Hub
+</a>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+const RAW = [
+["International",2025,"IOI","Kesatuan Bangsa","Computer Science","Hanif Achdan Pietoyo","Bronze"],
+["International",2025,"IOAI","Pribadi Depok","Computer Science","Luvidi Pranawa Alghari","Silver"],
+["International",2025,"IOAA","Kesatuan Bangsa","Astronomy","Novin Raushan","Gold"],
+["International",2025,"IOAA","Kharisma Bangsa","Astronomy","Jasper Rexx Putra Cakra","Silver"],
+["International",2025,"IPhO","Kesatuan Bangsa","Physics","Gusti Komang Abhika Atmaja","HM"],
+["International",2025,"APhO","Kesatuan Bangsa","Physics","Gusti Komang Abhika Atmaja","HM"],
+["International",2025,"APIO","Kesatuan Bangsa","Computer Science","Hanif Achdan Pietoyo","Silver"],
+["International",2024,"IOAA","Kesatuan Bangsa","Astronomy","Novin Raushan","Bronze"],
+["International",2024,"IEO","Pribadi Bandung","Economy","Nazla Filia Adzkia Taqiya","Silver"],
+["International",2024,"IGEO","Pribadi Bandung","Geography","Nareswari Tarisa Kirana","Bronze"],
+["International",2023,"IESO","Kesatuan Bangsa","Earth Science","Reyhan Adhiguna","Gold"],
+["International",2023,"IGEO","Pribadi Bandung","Geography","Fikri Ghifari Hanifah","Silver"],
+["International",2023,"IPhO","Fatih","Physics","M. Arif Khalfani Ismail","Bronze"],
+["International",2023,"IMO","Kharisma Bangsa","Mathematics","Axel Giovanni Hartanto","HM"],
+["International",2023,"IOAA","Semesta","Astronomy","Dzaky Rafiansyah","Silver"],
+["International",2023,"IChO","Cahaya Rancamaya","Chemistry","M. Adyan Dafi","Bronze"],
+["International",2023,"IEO","Kharisma Bangsa","Economy","Muhammad Amadeus Ihsan Candra","Gold"],
+["International",2022,"IOAA","Semesta","Astronomy","Dzaky Rafiansyah","Bronze"],
+["International",2022,"IGEO","Pribadi Bandung","Geography","Fikri Hanifah","Bronze"],
+["International",2022,"IPhO","Kesatuan Bangsa","Physics","althaaf syaikha nuhaad","Bronze"],
+["International",2021,"IOAA","Semesta","Astronomy","Nazal Rhinta Hawari","Bronze"],
+["International",2021,"IMO","Kharisma Bangsa","Mathematics","Farrel Dwireswara S","Bronze"],
+["International",2021,"IOI","Semesta","Computer Science","Pikatan Arya Bramajati","Gold"],
+["International",2020,"GeCAA","Kharisma Bangsa","Astronomy","M. Adhimas Rikkat","Silver"],
+["International",2020,"APIO","Semesta","Computer Science","Pikatan Arya Bramajati","Silver"],
+["International",2020,"IMO","Kesatuan Bangsa","Mathematics","Billie Hartanto","Bronze"],
+["International",2020,"IMO","Kharisma Bangsa","Mathematics","Farrel Dwireswara S","Bronze"],
+["International",2020,"IOI","Semesta","Computer Science","Pikatan Arya Bramajati","Gold"],
+["International",2019,"APhO","Kesatuan Bangsa","Physics","Gusti Putu Surya Govinda Atmaja","HM"],
+["International",2019,"IOI","Pribadi Bandung","Computer Science","Vincent Ling","Silver"],
+["International",2019,"IOI","Semesta","Computer Science","Abdul Malik Nurohman","Gold"],
+["International",2019,"IGeO","Semesta","Geography","Agista Komaladewi","Silver"],
+["International",2019,"IBO","Pribadi Bandung","Biology","Nedi Sawego Yogya","Silver"],
+["International",2019,"IPhO","Kesatuan Bangsa","Physics","Gusti Putu Surya Govinda Atmaja","Silver"],
+["International",2019,"EuPhO","Kesatuan Bangsa","Physics","Gusti Putu Surya Govinda Atmaja","Bronze"],
+["International",2019,"APMO","Kharisma Bangsa","Mathematics","Alfian Edgar Tjandra","Bronze"],
+["International",2019,"APMO","Kharisma Bangsa","Mathematics","Farrel Dwireswara S","Bronze"],
+["International",2019,"APMO","Semesta","Mathematics","Muhammad Faiq Fauzi","HM"],
+["International",2019,"IChO","Semesta","Chemistry","Bakuh Danang Setyo Budi","Silver"],
+["International",2019,"IMO","Kharisma Bangsa","Mathematics","Alfian Edgar Tjandra","Silver"],
+["International",2019,"IMO","Kharisma Bangsa","Mathematics","Farrel Dwireswara S","Bronze"],
+["International",2018,"IGeO","Kesatuan Bangsa","Geography","M. Nadafa Isnain","Silver"],
+["International",2018,"IGeO","Kharisma Bangsa","Geography","Rizky Amalia Wulandari","Bronze"],
+["International",2018,"IOAA","Kesatuan Bangsa","Astronomy","Muhammad Ikhsan K.","Bronze"],
+["International",2018,"IOAA","Kharisma Bangsa","Astronomy","Muhammad Fajril","Silver"],
+["International",2018,"IBO","Semesta","Biology","Syailendra Karuna S","Silver"],
+["International",2018,"IOI","Semesta","Computer Science","Abdul Malik Nurohman","Silver"],
+["International",2018,"IPhO","Semesta","Physics","Ahmad Ufar Thoriq","Bronze"],
+["International",2018,"IMO","Kharisma Bangsa","Mathematics","Alfian Edgar Tjandra","Silver"],
+["International",2018,"IMO","Kharisma Bangsa","Mathematics","Farras Muhammad Hibban Faddila","Silver"],
+["International",2018,"IESO","Kesatuan Bangsa","Earth Science","Lintang Ambar Pramesti","Bronze"],
+["International",2017,"IMO","Kharisma Bangsa","Mathematics","Farras Muhammad Hibban Faddila","HM"],
+["International",2017,"IPhO","Kharisma Bangsa","Physics","Faisal Husni","Silver"],
+["International",2017,"IBO","Kharisma Bangsa","Biology","Muhammad Ikhsan","Silver"],
+["International",2017,"IBO","Semesta","Biology","Syailendra Karuna S","Silver"],
+["International",2017,"IBO","Semesta","Biology","Salsabila Roihanah","Bronze"],
+["International",2017,"IESO","Kesatuan Bangsa","Earth Science","Alse Nabilah","Bronze"],
+["International",2017,"IOAA","Kesatuan Bangsa","Astronomy","Muhammad Ikhsan Kusrachmansyah","Bronze"],
+["International",2017,"IChO","Kharisma Bangsa","Chemistry","Fahmi Naufal Rizki","Silver"],
+["International",2017,"IOAA","Semesta","Astronomy","Yunianti Khotimah","Bronze"],
+["International",2016,"IGeO","Kesatuan Bangsa","Geography","Zithny Ilman Prihastopo","Bronze"],
+["International",2016,"IChO","Kharisma Bangsa","Chemistry","Fahmi Naufal Rizky","Silver"],
+["International",2016,"IOAA","Semesta","Astronomy","Yunianti Khotimah","Bronze"],
+["International",2016,"IOAA","Semesta","Astronomy","Muhammad Ali Saifudin","Bronze"],
+["International",2016,"IESO","Kesatuan Bangsa","Earth Science","Dinannovi Islamiyati","Bronze"],
+["International",2015,"IChO","Sragen BBS","Chemistry","Abdul Hamid Abu Bakar","Silver"],
+["International",2015,"IBO","Kharisma Bangsa","Biology","Maria Patricia Inggriani","Gold"],
+["International",2015,"IBO","Semesta","Biology","Hana Fauzyyah Hanifin","Silver"],
+["International",2015,"IOAA","Semesta","Astronomy","M. Ali Syaifudin","Silver"],
+["National",2025,"OSN","Kesatuan Bangsa","Biology","Alvario Wirananda Permana","Silver"],
+["National",2025,"OSN","Kharisma Bangsa","Biology","Mahendra Syaiful Hakim","Silver"],
+["National",2025,"OSN","Semesta","Mathematics","Mikail Savero Rasendrya","Silver"],
+["National",2025,"OSN","Kesatuan Bangsa","Physics","Bening Saoma Palupi","Silver"],
+["National",2025,"OSN","Kharisma Bangsa","Mathematics","Daffa Atha Arkana","Silver"],
+["National",2025,"OSN","Fatih","Computer Science","Ahmad Mufadhdhal","HM"],
+["National",2025,"OSN","Kharisma Bangsa","Computer Science","Muhammad Daffarian Altair","HM"],
+["National",2025,"OSN","Pribadi Depok","Astronomy","Hafidz Rasya Putra Permana","HM"],
+["National",2025,"OSN","Kesatuan Bangsa","Mathematics","Nararya Rafa Suryawirawan","HM"],
+["National",2025,"OSN","Cahaya Rancamaya","Economy","Shafwan Nizar Aulia","Gold"],
+["National",2025,"OSN","Kharisma Bangsa","Astronomy","Muhammad Zhafif","Gold"],
+["National",2025,"OSN","Kesatuan Bangsa","Physics","Gusti Komang Abhika Atmaja","Gold"],
+["National",2025,"OSN","Semesta","Astronomy","Jupiter Arshavino Raditya Mustofa","Gold"],
+["National",2025,"OSN","Kesatuan Bangsa","Earth Science","Billy Adnan Khalifah","Gold"],
+["National",2025,"OSN","Kesatuan Bangsa","Chemistry","Aloysius Gonzaga Duta Setiawan","Bronze"],
+["National",2025,"OSN","Kharisma Bangsa","Computer Science","Ahmad Yazid Muhandis","Bronze"],
+["National",2025,"OSN","Pribadi Bandung","Computer Science","Serenity Arianna Kosasih","Bronze"],
+["National",2025,"OSN","Semesta","Science","Alarick Agharr Adila","Bronze"],
+["National",2025,"OSN","Pribadi Bandung","Biology","Faizah Adriansyah","Bronze"],
+["National",2025,"OSN","Pribadi Depok","Astronomy","Asri Maharani","Bronze"],
+["National",2025,"OSN","Kesatuan Bangsa","Computer Science","Leonardus Lintang Panji Utama","Bronze"],
+["National",2025,"OSN","Kesatuan Bangsa","Science","Dastan Arsya Rovino","Bronze"],
+["National",2025,"OSN","Cahaya Rancamaya","Mathematics","Faiq Nururrahman Hutrindo","Bronze"],
+["National",2025,"OSN","Cahaya Rancamaya","Mathematics","Celso Rayi Al Khairy Firman","Bronze"],
+["National",2025,"OSN","Pribadi Depok","Earth Science","Nayyara Aurrum Triadi Putri","Bronze"],
+["National",2025,"OSN","Pribadi Depok","Mathematics","Farabi Azzam","Bronze"],
+["National",2024,"OSN","Kesatuan Bangsa","Astronomy","Bening Saoma Palupi","Gold"],
+["National",2024,"OSN","Kharisma Bangsa","Astronomy","Jasper Rexx Putra Cakra","Gold"],
+["National",2024,"OSN","Semesta","Astronomy","Yazeira Andini Maheswari","Bronze"],
+["National",2024,"OSN","Kesatuan Bangsa","Biology","Alvario Wirananda Permana","Bronze"],
+["National",2024,"OSN","Mega Islamic","Biology","Muhammad Abdillah Firdaus","Bronze"],
+["National",2024,"OSN","Kharisma Bangsa","Economy","Muhammad Rafi Qsan Baskoro","Bronze"],
+["National",2024,"OSN","Kesatuan Bangsa","Physics","Gusti Komang Abhika Atmaja","Silver"],
+["National",2024,"OSN","Cahaya Rancamaya","Geography","Muhamad Kun Fatihah","Bronze"],
+["National",2024,"OSN","Kesatuan Bangsa","Geography","Qurrotu Aini Nur Amalina","Bronze"],
+["National",2024,"OSN","Pribadi Depok","Computer Science","Luvidi Pranawa Alghari","Gold"],
+["National",2024,"OSN","Pribadi Depok","Computer Science","Rakha Aziztama Adinindya","Silver"],
+["National",2024,"OSN","Kesatuan Bangsa","Science","Atdeva Gavrilla Wisangeni","Silver"],
+["National",2024,"OSN","Cahaya Rancamaya","Chemistry","Baruna Adi Sanjaya","Silver"],
+["National",2024,"OSN","Semesta","Chemistry","Daud Abdul Hakim Naufal","Bronze"],
+["National",2024,"OSN","Cahaya Rancamaya","Mathematics","Fauzi Kemal Maulidi","Silver"],
+["National",2024,"OSN","Semesta","Mathematics","Mikail Savero Rasendrya","Silver"],
+["National",2024,"OSN","Kharisma Bangsa","Mathematics","Ahmad Yazid Muhandis","Gold"],
+["National",2024,"OSN","Kharisma Bangsa","Mathematics","Aryo Jati Kusumo","Bronze"],
+["National",2023,"OSN","Kesatuan Bangsa","Astronomy","Novin Raushan","Gold"],
+["National",2023,"OSN","Kharisma Bangsa","Astronomy","Muhammad Ababiel Alif Andara","Silver"],
+["National",2023,"OSN","Pribadi Bandung","Astronomy","Ahmad Fiandra Zain","Silver"],
+["National",2023,"OSN","Kesatuan Bangsa","Biology","Reyhan Fitrian Arifin","Bronze"],
+["National",2023,"OSN","Pribadi Bandung","Biology","Farel Ahmad Azzikri","Bronze"],
+["National",2023,"OSN","Kharisma Bangsa","Economy","Ahmad Hasib Haidar","Silver"],
+["National",2023,"OSN","Pribadi Bandung","Economy","Nazla Filia Adzkia Taqiya","Bronze"],
+["National",2023,"OSN","Kesatuan Bangsa","Physics","Revael Pramudya Yudisthira","Silver"],
+["National",2023,"OSN","Pribadi Bandung","Physics","Rayhan Satrio Adi Nurdjaman","Silver"],
+["National",2023,"OSN","Semesta","Physics","Pramudya Karindra Arya Kusuma","Bronze"],
+["National",2023,"OSN","Kesatuan Bangsa","Geography","Irfannesa Jesse Candraningtyas","Bronze"],
+["National",2023,"OSN","Semesta","Geography","Ai Kaga Naufal Abiyyu Najah","Bronze"],
+["National",2023,"OSN","Kesatuan Bangsa","Computer Science","Hanif Achdan Pietoyo","Gold"],
+["National",2023,"OSN","Semesta","Science","Yazeira Andini Maheswari","Silver"],
+["National",2023,"OSN","Kesatuan Bangsa","Earth Science","Isyaya Zahir","Silver"],
+["National",2023,"OSN","Cahaya Rancamaya","Chemistry","Baruna Adi Sanjaya","Silver"],
+["National",2023,"OSN","Semesta","Chemistry","Daud Abdul Hakim Naufal","Bronze"],
+["National",2023,"OSN","Semesta","Chemistry","Emeliana Putri Ayu Ningsih","Bronze"],
+["National",2023,"OSN","Cahaya Rancamaya","Mathematics","Muhammad Ilham Alfarisi","Bronze"],
+["National",2023,"OSN","Kesatuan Bangsa","Mathematics","Dzaky Aulia Fadhil","Gold"],
+["National",2023,"OSN","Kesatuan Bangsa","Mathematics","Felicia Grace Angelyn Ferdianto","Bronze"],
+["National",2023,"OSN","Kharisma Bangsa","Mathematics","Anak Agung Gde Krisna Kesumawijaya","Bronze"],
+["National",2023,"OSN","Kesatuan Bangsa","Mathematics","Leonardus Lintang Panji Utama","Bronze"],
+["National",2023,"OSN","Kesatuan Bangsa","Mathematics","Zufar Hanasta Ilmi","Bronze"],
+["National",2023,"OSN","Pribadi Depok","Mathematics","Luvidi Pranawa Alghari","Silver"],
+["National",2023,"OSN","Pribadi Depok","Mathematics","Neisha Calya Mahardhika","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Biology","Ganang Fattahudien","Gold"],
+["National",2022,"OSN","Kesatuan Bangsa","Economy","Latif Anwar","Silver"],
+["National",2022,"OSN","Kharisma Bangsa","Economy","Muhammad Amadeus","Gold"],
+["National",2022,"OSN","Pribadi Bandung","Economy","Nazla Filia","Silver"],
+["National",2022,"OSN","Semesta","Economy","Agus Tio","Bronze"],
+["National",2022,"OSN","Cahaya Rancamaya","Physics","Muhammad Luqman Hakim","Gold"],
+["National",2022,"OSN","Fatih","Physics","Muhammad Arif Khalfani Ismail","Silver"],
+["National",2022,"OSN","Kesatuan Bangsa","Physics","Revael Pramudya Y.","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Physics","Naraja Khaufandra","Bronze"],
+["National",2022,"OSN","Kharisma Bangsa","Physics","Andias Alfitra Santoso","Bronze"],
+["National",2022,"OSN","Semesta","Physics","Dzaky Rafiansyah","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Geography","Ragil Faiz","Bronze"],
+["National",2022,"OSN","Pribadi Bandung","Geography","Nareswari Tarisa Kirana","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Computer Science","Danar Abiyoga","Bronze"],
+["National",2022,"OSN","Kharisma Bangsa","Computer Science","Muhammad Nabil","Silver"],
+["National",2022,"OSN","Pribadi Bandung","Computer Science","Muhammad Aqila","Bronze"],
+["National",2022,"OSN","Semesta","Computer Science","Galih Nur","Silver"],
+["National",2022,"OSN","Semesta","Computer Science","Daffa Rayhan","Silver"],
+["National",2022,"OSN","Cahaya Rancamaya","Science","Muhammad Zayyan Fairuz","Silver"],
+["National",2022,"OSN","SMAN Banua","Earth Science","Muhammad Zain","Bronze"],
+["National",2022,"OSN","SMAN Banua","Earth Science","Michael Fernando","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Earth Science","Reyhan Adhiguna","Gold"],
+["National",2022,"OSN","Kharisma Bangsa","Earth Science","Aryan Khayri","Silver"],
+["National",2022,"OSN","Cahaya Rancamaya","Chemistry","Rafif Dista Serano","Gold"],
+["National",2022,"OSN","Cahaya Rancamaya","Chemistry","Baruna Adi Sanjaya","Bronze"],
+["National",2022,"OSN","Fatih","Chemistry","Nabilah Zahra","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Chemistry","Kriestan Valerio","Silver"],
+["National",2022,"OSN","Kharisma Bangsa","Chemistry","Annabelle Qetsyah Putri Setyawan","Gold"],
+["National",2022,"OSN","Cahaya Rancamaya","Mathematics","Muhammad Ilham A. F.","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Mathematics","Felicia Grace","Bronze"],
+["National",2022,"OSN","Kesatuan Bangsa","Mathematics","Dzaky Aulia Fadhil","Bronze"],
+["National",2022,"OSN","Kharisma Bangsa","Mathematics","Luthfi Bima Putra","Gold"],
+["National",2022,"OSN","Semesta","Mathematics","Muhammad Hanif","Bronze"],
+["National",2022,"OSN","Kharisma Bangsa","Mathematics","Naufal Fadhlurrahman","Bronze"],
+["National",2021,"OSN","Fatih","Astronomy","Nabilah Zahra","Bronze"],
+["National",2021,"OSN","Semesta","Astronomy","Dzaky Rafiansyah","Gold"],
+["National",2021,"OSN","Kesatuan Bangsa","Biology","Nara Tazkia Larasati","Bronze"],
+["National",2021,"OSN","Semesta","Biology","Charlos Falentino","Bronze"],
+["National",2021,"OSN","SMAN Banua","Physics","Muhammad Dipa Resfadillah","Bronze"],
+["National",2021,"OSN","Cahaya Rancamaya","Physics","Muhammad Mikail Rais","Silver"],
+["National",2021,"OSN","Kesatuan Bangsa","Physics","Althaaf Syaikha Nuhaad","Silver"],
+["National",2021,"OSN","Semesta","Physics","Ahmad Yasin","Bronze"],
+["National",2021,"OSN","Kesatuan Bangsa","Geography","Aditya Rio","Silver"],
+["National",2021,"OSN","Pribadi Bandung","Geography","Fikri Ghifari Hanifah","Silver"],
+["National",2021,"OSN","Kesatuan Bangsa","Computer Science","Nagata Parama","Bronze"],
+["National",2021,"OSN","Kharisma Bangsa","Computer Science","Shielda Kamilia Hidajat","Silver"],
+["National",2021,"OSN","Pribadi Bandung","Computer Science","Yomori Achiza","Bronze"],
+["National",2021,"OSN","Semesta","Computer Science","Eryawan Presma Yulianrifat","Silver"],
+["National",2021,"OSN","Semesta","Computer Science","Mochammad Fariz Rifqi","Bronze"],
+["National",2021,"OSN","Kesatuan Bangsa","Science","Reyhan Fitrian Arifin","Gold"],
+["National",2021,"OSN","Kesatuan Bangsa","Science","Novin Raushan","Gold"],
+["National",2021,"OSN","Kharisma Bangsa","Science","Pradipto Pandu Maheswara","Bronze"],
+["National",2021,"OSN","Kharisma Bangsa","Science","Dzakwan Alvaro Putra Yudana","Bronze"],
+["National",2021,"OSN","Semesta","Science","Keisya Dhiandra Prabowo","Bronze"],
+["National",2021,"OSN","Cahaya Rancamaya","Chemistry","Rafif Dista Serano","Bronze"],
+["National",2021,"OSN","Cahaya Rancamaya","Chemistry","Muhammad Adyan Dafi","Bronze"],
+["National",2021,"OSN","Kesatuan Bangsa","Chemistry","Ayesha Rida Izzati","Silver"],
+["National",2021,"OSN","Kesatuan Bangsa","Chemistry","Reyhan Adhiguna","Silver"],
+["National",2021,"OSN","Kharisma Bangsa","Chemistry","Annabelle Qetsyah Putri Setyawan","Silver"],
+["National",2021,"OSN","Kharisma Bangsa","Chemistry","KGS Fakhri Rasyid","Bronze"],
+["National",2021,"OSN","Kesatuan Bangsa","Mathematics","Mh. Alan Maulana Ishak","Silver"],
+["National",2021,"OSN","Kesatuan Bangsa","Mathematics","Felicia Grace","Bronze"],
+["National",2021,"OSN","Kharisma Bangsa","Mathematics","Axel Giovanni","Gold"],
+["National",2021,"OSN","Pribadi Bandung","Mathematics","Muhammad Adam Nurkholis","Gold"],
+["National",2021,"OSN","Pribadi Depok","Mathematics","Muhammad Suryadeva","Bronze"],
+["National",2021,"OSN","Semesta","Mathematics","Fajar Arif","Silver"],
+["National",2021,"OSN","Semesta","Mathematics","Dzubyan Ilman R.","Silver"],
+["National",2021,"OSN","Kesatuan Bangsa","Mathematics","Bagas Anggareksa","Bronze"],
+["National",2021,"OSN","Kharisma Bangsa","Mathematics","Jasper Rexx Putra Cakra","Silver"],
+["National",2021,"OSN","Kharisma Bangsa","Mathematics","Fakhri Musyaffa Arianto","Silver"],
+["National",2021,"OSN","Semesta","Mathematics","Rendra Angga Saputra","Bronze"],
+["National",2020,"OSN","SMAN Banua","Astronomy","Aqilah Salwa Luthi","Silver"],
+["National",2020,"OSN","Kesatuan Bangsa","Astronomy","Muhammad Hazel Variansyah","Bronze"],
+["National",2020,"OSN","Pribadi Bandung","Astronomy","Aggy Anugrah Sakti","Bronze"],
+["National",2020,"OSN","Semesta","Astronomy","Nazal Rhinta Hawari","Gold"],
+["National",2020,"OSN","Kharisma Bangsa","Biology","Muhammad Raja Dzulhijjah Jauhari","Gold"],
+["National",2020,"OSN","Pribadi Bandung","Biology","Muhammad Aimar","Silver"],
+["National",2020,"OSN","Semesta","Biology","Muhammad Hafidz Radhea","Bronze"],
+["National",2020,"OSN","Cahaya Rancamaya","Physics","Muhammad Luqman Hakim","Bronze"],
+["National",2020,"OSN","Kesatuan Bangsa","Physics","Althaaf Syaikha Nuhaad","Bronze"],
+["National",2020,"OSN","Pribadi Bandung","Physics","Muhammad Adam Nurkholis","Bronze"],
+["National",2020,"OSN","Kesatuan Bangsa","Geography","Aulia Davetta Athif","Silver"],
+["National",2020,"OSN","Kesatuan Bangsa","Geography","Muhammad Alsamtu Tita Sabila","Silver"],
+["National",2020,"OSN","Semesta","Geography","Muhammad Sani Akmal F","Bronze"],
+["National",2020,"OSN","Cahaya Rancamaya","Computer Science","Muflih Naufal Maxi","Silver"],
+["National",2020,"OSN","Pribadi Bandung","Computer Science","Audra Aurora Izzani","Bronze"],
+["National",2020,"OSN","Pribadi Depok","Computer Science","M. Irfan Firmansyah","Bronze"],
+["National",2020,"OSN","Semesta","Computer Science","Nyoo Steven Christopher Handoko","Silver"],
+["National",2020,"OSN","Cahaya Rancamaya","Science","Iqbal Firmansyah","Bronze"],
+["National",2020,"OSN","Fatih","Science","Muhammad Arif Khalfani Ismail","Gold"],
+["National",2020,"OSN","Kesatuan Bangsa","Science","Latif Anwar","Bronze"],
+["National",2020,"OSN","Kharisma Bangsa","Science","Andias Alfitra Santoso","Gold"],
+["National",2020,"OSN","Pribadi Bandung","Science","Farel Ahmad Azzikri","Silver"],
+["National",2020,"OSN","Pribadi Bandung","Social Science","Nareswari Tarisa Kirana","Gold"],
+["National",2020,"OSN","Fatih","Earth Science","Mashita Mutiara Meutuah","Silver"],
+["National",2020,"OSN","Kesatuan Bangsa","Earth Science","Glady Sajidah Zahra","Gold"],
+["National",2020,"OSN","Semesta","Earth Science","Daffara Malika Abdullah","Bronze"],
+["National",2020,"OSN","Semesta","Earth Science","Ewangga Patrianada","Bronze"],
+["National",2020,"OSN","Kharisma Bangsa","Chemistry","Akbar Febry Wahyu Adrian","Silver"],
+["National",2020,"OSN","Kharisma Bangsa","Chemistry","Nicholas Jimmy Alden","Bronze"],
+["National",2020,"OSN","Pribadi Bandung","Chemistry","Muhammad Dihya Aby Abdi Manaf","Silver"],
+["National",2020,"OSN","Semesta","Chemistry","Adninda Fitri Risdianto","Gold"],
+["National",2020,"OSN","Cahaya Rancamaya","Mathematics","Ernest Regia Achmad Chandra","Bronze"],
+["National",2020,"OSN","Fatih","Mathematics","Ahmad Faqih Al Ghiffary","Silver"],
+["National",2020,"OSN","Kharisma Bangsa","Mathematics","Muhammad Rafi Adzikra","Silver"],
+["National",2020,"OSN","Kharisma Bangsa","Mathematics","Daffa Al Fathan Zaki","Bronze"],
+["National",2020,"OSN","Semesta","Mathematics","Fajar Arif Shodiqin","Silver"],
+["National",2020,"OSN","Cahaya Rancamaya","Mathematics","Muhammad Ilham Alfarisi","Silver"],
+["National",2020,"OSN","Kesatuan Bangsa","Mathematics","Abdullah Ahmad Yusuf","Bronze"],
+["National",2020,"OSN","Kharisma Bangsa","Mathematics","Ahmad Fikri Azhari","Silver"],
+["National",2020,"OSN","Pribadi Bandung","Mathematics","Nazma Aliya Zahira","Bronze"],
+["National",2019,"OSN","Kharisma Bangsa","Astronomy","Mohammad Adhimas Rikat","Bronze"],
+["National",2019,"OSN","Semesta","Astronomy","Dwi Oktavianto Makdasari","Bronze"],
+["National",2019,"OSN","Pribadi Bandung","Biology","Muhammad Aimar","Bronze"],
+["National",2019,"OSN","Kesatuan Bangsa","Economy","Aisyah Aurelia Azis","Bronze"],
+["National",2019,"OSN","Pribadi Bandung","Economy","Abirizar Isnain Daud","Bronze"],
+["National",2019,"OSN","Fatih","Physics","Ilham Darni","Silver"],
+["National",2019,"OSN","Kesatuan Bangsa","Physics","Daud Muhamad Azhari","Silver"],
+["National",2019,"OSN","Kharisma Bangsa","Physics","Dwi Rezki","Bronze"],
+["National",2019,"OSN","Kesatuan Bangsa","Geography","Ryan Andri Wijaya","Bronze"],
+["National",2019,"OSN","Kesatuan Bangsa","Geography","Muhammad Alsamtu Tita Sabila","Bronze"],
+["National",2019,"OSN","Cahaya Rancamaya","Computer Science","Banabil Fawazaim Muhammad","Bronze"],
+["National",2019,"OSN","Semesta","Computer Science","Pikatan Arya Bramajati","Gold"],
+["National",2019,"OSN","Cahaya Rancamaya","Science","Muhammad Adyan Dafi","Bronze"],
+["National",2019,"OSN","Pribadi Bandung","Science","Nabil Tahtul Kautsar","Silver"],
+["National",2019,"OSN","SMAN Banua","Earth Science","Fajar Malik Noor Ahmad","Bronze"],
+["National",2019,"OSN","SMAN Banua","Earth Science","R. Joshua Nathaniel Haryanto","Bronze"],
+["National",2019,"OSN","Fatih","Earth Science","Mashita Mutiara Meutuah","Bronze"],
+["National",2019,"OSN","Kesatuan Bangsa","Earth Science","Glady Sajidah Zahra","Silver"],
+["National",2019,"OSN","Semesta","Chemistry","Adninda Fitri Risdianto","Silver"],
+["National",2019,"OSN","Cahaya Rancamaya","Mathematics","Muflih Naufal Maxi","Silver"],
+["National",2019,"OSN","Fatih","Mathematics","Ahmad Faqih Al Ghiffary","Silver"],
+["National",2019,"OSN","Kesatuan Bangsa","Mathematics","Billie Hartanto","Silver"],
+["National",2019,"OSN","Kesatuan Bangsa","Mathematics","Tahta Aulia Kusuma Arifin","Bronze"],
+["National",2019,"OSN","Kharisma Bangsa","Mathematics","Muhammad Rafi Adzikra","Bronze"],
+["National",2019,"OSN","Kharisma Bangsa","Mathematics","Febrian Dwi Kimhan","Bronze"],
+["National",2019,"OSN","Kharisma Bangsa","Mathematics","Luthfi Bima Putra","Silver"],
+["National",2019,"OSN","Pribadi Depok","Mathematics","Muhammad Suryadeva","Gold"],
+["National",2018,"OSN","Kesatuan Bangsa","Astronomy","Elisabeth Maria Indah","Bronze"],
+["National",2018,"OSN","Pribadi Bandung","Astronomy","Razita Afrina Nuriyan","Silver"],
+["National",2018,"OSN","Kesatuan Bangsa","Biology","Nurul Ainun Nuha","Bronze"],
+["National",2018,"OSN","Kharisma Bangsa","Biology","Fath Audi Aldikamil Ibrahim","Gold"],
+["National",2018,"OSN","Pribadi Bandung","Biology","Nedi Sawego Yoga","Bronze"],
+["National",2018,"OSN","Pribadi Depok","Biology","Bagus Amartya Y.","Bronze"],
+["National",2018,"OSN","Kharisma Bangsa","Economy","Kevi Cyril Ahmad","Silver"],
+["National",2018,"OSN","Kharisma Bangsa","Economy","Prameswari Jovita Astuti","Bronze"],
+["National",2018,"OSN","Fatih","Physics","Ilham Darni","Bronze"],
+["National",2018,"OSN","Kesatuan Bangsa","Physics","G.P Surya Govinda","Gold"],
+["National",2018,"OSN","Semesta","Physics","Talitha Putri","Silver"],
+["National",2018,"OSN","Kesatuan Bangsa","Geography","Ahmad Zainuddin Mahfud","Bronze"],
+["National",2018,"OSN","Semesta","Geography","Agista Komaladewi","Bronze"],
+["National",2018,"OSN","Cahaya Rancamaya","Computer Science","Anis Farhan Itsnaini","Bronze"],
+["National",2018,"OSN","Kharisma Bangsa","Computer Science","Muh. Mufti Sofyannoor","Silver"],
+["National",2018,"OSN","Pribadi Bandung","Computer Science","Vincent Ling","Gold"],
+["National",2018,"OSN","Pribadi Bandung","Computer Science","Fathiya Nur Assyifa","Gold"],
+["National",2018,"OSN","Cahaya Rancamaya","Science","Muhammad Mikail Rais","Silver"],
+["National",2018,"OSN","Kesatuan Bangsa","Science","Reyhan Adhiguna Pamungkas","Bronze"],
+["National",2018,"OSN","Kesatuan Bangsa","Earth Science","Resky Ilham Yudhasaputra","Silver"],
+["National",2018,"OSN","Pribadi Bandung","Earth Science","Muh Amirul Mu'Min","Bronze"],
+["National",2018,"OSN","Kharisma Bangsa","Chemistry","Azzimar Firdaus","Gold"],
+["National",2018,"OSN","Semesta","Chemistry","Bakuh Danang","Silver"],
+["National",2018,"OSN","Kesatuan Bangsa","Mathematics","Sulthan Bimo","Bronze"],
+["National",2018,"OSN","Kharisma Bangsa","Mathematics","Farrel Dwireswara S","Gold"],
+["National",2018,"OSN","Semesta","Mathematics","Muh. Faiq Fauzi","Silver"],
+["National",2018,"OSN","Cahaya Rancamaya","Mathematics","Mohammad Rozi Badrus","Bronze"],
+["National",2018,"OSN","Kharisma Bangsa","Mathematics","Muhammad Ali Zainal Abidin","Silver"],
+["National",2018,"OSN","Pribadi Depok","Mathematics","M. Irfan Firmansyah","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Astronomy","Muh. Fajril Afkaar Ali","Gold"],
+["National",2017,"OSN","Kharisma Bangsa","Astronomy","Eva Maisaramita Gayoris","Bronze"],
+["National",2017,"OSN","Semesta","Astronomy","Nabila Farah Debi","Bronze"],
+["National",2017,"OSN","Kesatuan Bangsa","Biology","Nurul Ainunnuha","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Biology","Fath Audi Aldikamil Ibrahim","Bronze"],
+["National",2017,"OSN","Pribadi Bandung","Biology","Nedi Sawego Yogya","Silver"],
+["National",2017,"OSN","Semesta","Biology","Alyaa Ulaa Dhiya Ulhaq","Gold"],
+["National",2017,"OSN","Kesatuan Bangsa","Economy","Fabian Muhammad Giffari","Silver"],
+["National",2017,"OSN","Kharisma Bangsa","Economy","Shafiya Ayu Adzani","Silver"],
+["National",2017,"OSN","Kesatuan Bangsa","Physics","Gusti Putu Surya Govinda Atmaja","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Physics","Sarah Alyaa Tsaabitah","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Physics","Muhammad Farhan Husain","Bronze"],
+["National",2017,"OSN","Semesta","Physics","Ahmad Aufar Thoriq","Silver"],
+["National",2017,"OSN","Kesatuan Bangsa","Geography","M. Nadafa Isnain","Silver"],
+["National",2017,"OSN","Kharisma Bangsa","Geography","Rizky Amalia Wulandari","Bronze"],
+["National",2017,"OSN","Semesta","Geography","Amalia Putri Nirwandhani","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Computer Science","Budiman Arbenta","Silver"],
+["National",2017,"OSN","Semesta","Computer Science","Abdul Malik Nurrokhman","Gold"],
+["National",2017,"OSN","Kesatuan Bangsa","Earth Science","Lintang Ambar Pramesti","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Earth Science","Muh. Afi Naufal","Silver"],
+["National",2017,"OSN","Pribadi Bandung","Earth Science","Muh. Alif Ikhsan","Silver"],
+["National",2017,"OSN","Semesta","Earth Science","Alzana Armaniar Farhani","Bronze"],
+["National",2017,"OSN","Kesatuan Bangsa","Chemistry","Marselia Febrianti Sihotang","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Chemistry","Sri Ruhmina Syarfina","Bronze"],
+["National",2017,"OSN","Pribadi Depok","Chemistry","Aria Purwasatya Salim","Silver"],
+["National",2017,"OSN","Semesta","Chemistry","Mutiara Aulia Firdausy","Bronze"],
+["National",2017,"OSN","Semesta","Chemistry","Akbar As Sakhab Fiisabilillah","Bronze"],
+["National",2017,"OSN","Kesatuan Bangsa","Mathematics","Hanif Ainurrizqi","Gold"],
+["National",2017,"OSN","Kharisma Bangsa","Mathematics","Alfian Edgar Tjandra","Gold"],
+["National",2017,"OSN","Kharisma Bangsa","Mathematics","Agi Tri Uzila","Silver"],
+["National",2017,"OSN","Pribadi Bandung","Mathematics","La Ode Rajuh Emoko","Silver"],
+["National",2017,"OSN","Semesta","Mathematics","Akeyla Pradia Naufal","Gold"],
+["National",2017,"OSN","Fatih","Mathematics","Ahmad Faqih Alghiffary","Bronze"],
+["National",2017,"OSN","Kesatuan Bangsa","Mathematics","Fathan Rasyid Ramadhan","Bronze"],
+["National",2017,"OSN","Kharisma Bangsa","Mathematics","Daffa Alfathan Zaki","Silver"],
+["National",2017,"OSN","Semesta","Mathematics","Adninda Fitri Risdianto","Silver"],
+["National",2016,"OSN","Kesatuan Bangsa","Astronomy","Muhammad Ikhsan K","Silver"],
+["National",2016,"OSN","Kesatuan Bangsa","Astronomy","Bagus Bachtiar","Silver"],
+["National",2016,"OSN","Kharisma Bangsa","Astronomy","Jorghy Sultan Bakhtari","Silver"],
+["National",2016,"OSN","Semesta","Astronomy","Azka Dzaki Arrazzaq","Bronze"],
+["National",2016,"OSN","Kesatuan Bangsa","Biology","Azzahra Asysyifa","Silver"],
+["National",2016,"OSN","Kesatuan Bangsa","Biology","Ihsan Fahmi Rofananda","Bronze"],
+["National",2016,"OSN","Kesatuan Bangsa","Biology","Iffah Nabilah","Bronze"],
+["National",2016,"OSN","Kharisma Bangsa","Biology","Muhammad Ikhsan","Gold"],
+["National",2016,"OSN","Kharisma Bangsa","Biology","Danang Dwi Prasetyo","Bronze"],
+["National",2016,"OSN","Semesta","Biology","Syailendra Karuna S","Gold"],
+["National",2016,"OSN","Semesta","Biology","Salsabilaa Roihanah","Silver"],
+["National",2016,"OSN","Fatih","Economy","Hatta Mohammad Misra","Bronze"],
+["National",2016,"OSN","Kharisma Bangsa","Economy","Shafiya Ayu Adzhani","Bronze"],
+["National",2016,"OSN","Semesta","Economy","Andreas Alfonsus Sahat A. S","Bronze"],
+["National",2016,"OSN","Kesatuan Bangsa","Physics","Yunus Adu","Silver"],
+["National",2016,"OSN","Kharisma Bangsa","Physics","Teja Abdullah Al Mujahid","Silver"],
+["National",2016,"OSN","Kharisma Bangsa","Physics","Sarah Alyaa Tsaabitah","Bronze"],
+["National",2016,"OSN","Semesta","Physics","Nafis Salman B","Gold"],
+["National",2016,"OSN","Semesta","Physics","Naqita Ramadhani","Bronze"],
+["National",2016,"OSN","Kesatuan Bangsa","Geography","Clint Gunawijaya","Silver"],
+["National",2016,"OSN","Kesatuan Bangsa","Geography","Muh Nadafa Isnain","Bronze"],
+["National",2016,"OSN","Kesatuan Bangsa","Computer Science","Dhipta Raditya Yudhasmara","Bronze"],
+["National",2016,"OSN","Pribadi Bandung","Computer Science","Muh Ridho Ananda","Silver"],
+["National",2016,"OSN","Pribadi Bandung","Computer Science","Irfan Sofyana Putra","Silver"],
+["National",2016,"OSN","Pribadi Depok","Computer Science","Ghiffary Alfatah Abiyu Otslan","Bronze"],
+["National",2016,"OSN","Pribadi Depok","Computer Science","Ferro Geraldi Hardian","Bronze"],
+["National",2016,"OSN","Sragen BBS","Computer Science","Alfian Fuadi Rafli","Gold"],
+["National",2016,"OSN","Sragen BBS","Computer Science","Faiz Miftakhur Rozaqi","Bronze"],
+["National",2016,"OSN","Kesatuan Bangsa","Science","Daffa Aviciena Wibowo","Silver"],
+["National",2016,"OSN","Pribadi Bandung","Science","Tanya Nurhaisi Wulandari","Silver"],
+["National",2016,"OSN","SMAN Banua","Earth Science","Muhammad Ramazali","Gold"],
+["National",2016,"OSN","Kesatuan Bangsa","Earth Science","Alse Nabilah","Silver"],
+["National",2016,"OSN","Kharisma Bangsa","Earth Science","Muh Alfin Waskito N","Bronze"],
+["National",2016,"OSN","Semesta","Earth Science","Suwaibatul Annisa","Silver"],
+["National",2016,"OSN","Kesatuan Bangsa","Chemistry","Azyumar Luthfi Muhammad Alfariz","Silver"],
+["National",2016,"OSN","Kharisma Bangsa","Chemistry","Nadya Syahla Soemawisastra","Silver"],
+["National",2016,"OSN","Pribadi Depok","Chemistry","Aria Purwasatya Salim","Bronze"],
+["National",2016,"OSN","Semesta","Chemistry","Wahyuda Nuzul Fahmi","Gold"],
+["National",2016,"OSN","Semesta","Chemistry","Mutiara Auliya Firdausi","Silver"],
+["National",2016,"OSN","Semesta","Chemistry","Atika Nur Rochmah","Silver"],
+["National",2016,"OSN","Fatih","Mathematics","Muhammad Alif Aqsha","Bronze"],
+["National",2016,"OSN","Kesatuan Bangsa","Mathematics","Nabil Nabawi Wibisono","Bronze"],
+["National",2016,"OSN","Pribadi Bandung","Mathematics","La Ode Rajuh Emoko","Bronze"],
+["National",2016,"OSN","Kharisma Bangsa","Mathematics","Farrel Dwirewara Salim","Silver"],
+["National",2016,"OSN","Pribadi Bandung","Mathematics","Cintania Syurga Alifa","Bronze"],
+["National",2016,"OSN","Semesta","Mathematics","Muhammad Faiq Fauzi","Gold"],
+["National",2016,"OSN","Sragen BBS","Mathematics","Muhammad Hafidz Radhea","Bronze"],
+["National",2015,"OSN","Semesta","Astronomy","Yunianti Khotimah","Silver"],
+["National",2015,"OSN","Kesatuan Bangsa","Biology","Amelia Nur Khasanah","Gold"],
+["National",2015,"OSN","Kesatuan Bangsa","Biology","Ekapaksi Wisnumurti","Silver"],
+["National",2015,"OSN","Kharisma Bangsa","Biology","Muhammad Ikhsan","Silver"],
+["National",2015,"OSN","Semesta","Biology","Salsabilaa Roihanah","Bronze"],
+["National",2015,"OSN","Sragen BBS","Biology","M Ilham Dhiya R","Silver"],
+["National",2015,"OSN","Sragen BBS","Biology","Dewan Silasakti Buwana","Bronze"],
+["National",2015,"OSN","Sragen BBS","Biology","Handika Putra P","Bronze"],
+["National",2015,"OSN","Kesatuan Bangsa","Economy","Bagus Bachtiar","Gold"],
+["National",2015,"OSN","Semesta","Economy","Noor Rizky Firdhausy","Silver"],
+["National",2015,"OSN","Kesatuan Bangsa","Physics","M Alfyandy H","Gold"],
+["National",2015,"OSN","Kesatuan Bangsa","Physics","Yunus Adu","Bronze"],
+["National",2015,"OSN","Kharisma Bangsa","Physics","Faisal Husni","Gold"],
+["National",2015,"OSN","Pribadi Bandung","Physics","Muhammad Taufiq Murtadho","Gold"],
+["National",2015,"OSN","Kesatuan Bangsa","Geography","Zithny Ilman P","Gold"],
+["National",2015,"OSN","Pribadi Depok","Geography","Miftah Syarif Harsya","Bronze"],
+["National",2015,"OSN","Semesta","Geography","Muhamad Salman Alfarizy","Bronze"],
+["National",2015,"OSN","Kesatuan Bangsa","Computer Science","Dhipta Raditya","Bronze"],
+["National",2015,"OSN","Kharisma Bangsa","Computer Science","Ensof Barhami","Silver"],
+["National",2015,"OSN","Pribadi Bandung","Computer Science","Muh Ridho Ananda","Bronze"],
+["National",2015,"OSN","Pribadi Bandung","Computer Science","Ilham Aryasuta J","Bronze"],
+["National",2015,"OSN","Pribadi Depok","Computer Science","Ferro Geraldi Hardian","Silver"],
+["National",2015,"OSN","SMAN Sumbar","Computer Science","Novi Adri","Bronze"],
+["National",2015,"OSN","Semesta","Science","Talitha Putri","Gold"],
+["National",2015,"OSN","SMAN Banua","Earth Science","Dwi Siswanto","Bronze"],
+["National",2015,"OSN","SMAN Banua","Earth Science","Muhammad Fandy Ilhami","Bronze"],
+["National",2015,"OSN","Kesatuan Bangsa","Earth Science","Diannovi Islamiyati","Gold"],
+["National",2015,"OSN","Kesatuan Bangsa","Earth Science","Mujahid Alhaq","Silver"],
+["National",2015,"OSN","Kharisma Bangsa","Earth Science","Nisrina Bahiyah Kesuma","Bronze"],
+["National",2015,"OSN","Semesta","Earth Science","Abdan Malaka","Gold"],
+["National",2015,"OSN","Sragen BBS","Earth Science","M Fahmi Firmansyah P","Silver"],
+["National",2015,"OSN","Kesatuan Bangsa","Chemistry","Aulia Salsabella S","Bronze"],
+["National",2015,"OSN","Kesatuan Bangsa","Chemistry","Azyumar Luthfi M A","Bronze"],
+["National",2015,"OSN","Kharisma Bangsa","Chemistry","Fahmi Naufal Rizki","Silver"],
+["National",2015,"OSN","Kharisma Bangsa","Chemistry","M Wildan Hakim","Silver"],
+["National",2015,"OSN","Semesta","Chemistry","Atika Nur Rochmah","Gold"],
+["National",2015,"OSN","Semesta","Chemistry","Ihyar Kurnia","Silver"],
+["National",2015,"OSN","Fatih","Mathematics","Muhammad Alif Aqsa","Bronze"],
+["National",2015,"OSN","Kesatuan Bangsa","Mathematics","Agustinus Sinaga","Bronze"],
+["National",2015,"OSN","Kharisma Bangsa","Mathematics","Muhammad Afifurrahman","Gold"],
+["National",2015,"OSN","Kharisma Bangsa","Mathematics","Farras M Hibban Faddila","Gold"],
+["National",2015,"OSN","Pribadi Bandung","Mathematics","Muhammad Naufal Ausaf","Bronze"],
+["National",2015,"OSN","Sragen BBS","Mathematics","Aji Luhur Bhakti I F","Silver"],
+["National",2015,"OSN","Kesatuan Bangsa","Mathematics","Daffa Raihan Dewanto","Bronze"],
+["National",2015,"OSN","Kharisma Bangsa","Mathematics","Maritza Andreanne Rafa Ayusha","Silver"],
+["National",2014,"OSN","Semesta","Astronomy","Muhammad Ali Syaifudin","Silver"],
+["National",2014,"OSN","Semesta","Astronomy","Andra Hafi Aditya","Bronze"],
+["National",2014,"OSN","Kesatuan Bangsa","Biology","Anang Rizki Muharrom","Gold"],
+["National",2014,"OSN","Kesatuan Bangsa","Biology","Amelia Nur Khasanah","Silver"],
+["National",2014,"OSN","Kharisma Bangsa","Biology","Indah Fitriani","Gold"],
+["National",2014,"OSN","Kharisma Bangsa","Biology","Maria Patricia I","Silver"],
+["National",2014,"OSN","Pribadi Depok","Biology","Fikri Karim","Gold"],
+["National",2014,"OSN","Semesta","Biology","Rahmat Waluyo","Bronze"],
+["National",2014,"OSN","Sragen BBS","Biology","Dewan Silasakti Buana","Silver"],
+["National",2014,"OSN","Semesta","Biology","Salsabiilaa Roihanah","Gold"],
+["National",2014,"OSN","SMAN Banua","Economy","Ariana Maharani","Bronze"],
+["National",2014,"OSN","SMAN Sumbar","Economy","Khairun Nisa","Bronze"],
+["National",2014,"OSN","Kharisma Bangsa","Physics","Radryran Andrayukti","Gold"],
+["National",2014,"OSN","Pribadi Bandung","Physics","M Taufiq Murtadho","Bronze"],
+["National",2014,"OSN","Semesta","Physics","Emir Syahreza Fadhilla","Bronze"],
+["National",2014,"OSN","Semesta","Physics","Naura Assyifa Salma","Bronze"],
+["National",2014,"OSN","Kesatuan Bangsa","Physics","Gusti Putu Surya Govinda Atmaja","Bronze"],
+["National",2014,"OSN","Pribadi Depok","Physics","Aria Purwasatya Salim","Silver"],
+["National",2014,"OSN","Sragen BBS","Physics","Ahmad Aufar Thoriq","Gold"],
+["National",2014,"OSN","Fatih","Computer Science","Wira Abdillah Siregar","Gold"],
+["National",2014,"OSN","Semesta","Computer Science","Anab Maulana Barik","Silver"],
+["National",2014,"OSN","Semesta","Computer Science","Fahmi","Silver"],
+["National",2014,"OSN","Kesatuan Bangsa","Earth Science","Aya Shika V Bangun","Bronze"],
+["National",2014,"OSN","Kharisma Bangsa","Earth Science","Ghifari Muhammad Syani","Bronze"],
+["National",2014,"OSN","Semesta","Earth Science","Fahmi Adiyatma M","Silver"],
+["National",2014,"OSN","Semesta","Earth Science","Reynaldi P Hertiansa","Silver"],
+["National",2014,"OSN","SMAN Sumbar","Earth Science","Abdel Hafiz","Gold"],
+["National",2014,"OSN","SMAN Sumbar","Earth Science","Kazhimah Rosyada","Bronze"],
+["National",2014,"OSN","Sragen BBS","Earth Science","Paschalis Pindyka A K","Silver"],
+["National",2014,"OSN","Kesatuan Bangsa","Chemistry","Rangga Putra Pertama","Bronze"],
+["National",2014,"OSN","Kesatuan Bangsa","Chemistry","Nadia Khairunnisa F C","Bronze"],
+["National",2014,"OSN","Kharisma Bangsa","Chemistry","Azkia Rahmah","Silver"],
+["National",2014,"OSN","Pribadi Bandung","Chemistry","Maulinda Kusumawardani","Gold"],
+["National",2014,"OSN","Pribadi Depok","Chemistry","Ikhlas Khairil Imam","Silver"],
+["National",2014,"OSN","Semesta","Chemistry","Hilya Auliya","Silver"],
+["National",2014,"OSN","Semesta","Chemistry","Muhammad Roihan Munajih","Silver"],
+["National",2014,"OSN","Kesatuan Bangsa","Mathematics","Sutra Megariawati","Bronze"],
+["National",2014,"OSN","Kharisma Bangsa","Mathematics","Muhammad Afifurrahman","Silver"],
+["National",2014,"OSN","Kharisma Bangsa","Mathematics","Farras M Hibban Faddila","Silver"],
+["National",2014,"OSN","Pribadi Depok","Mathematics","Feno Valentino","Bronze"],
+["National",2014,"OSN","Pribadi Depok","Mathematics","Mohammad Rifqi Zein","Bronze"],
+["National",2014,"OSN","Semesta","Mathematics","Pratamamia Agung P","Bronze"],
+["National",2014,"OSN","Pribadi Bandung","Mathematics","La Ode Rajuh Emoko","Bronze"],
+["National",2014,"OSN","Pribadi Depok","Mathematics","Giffari Alfatah Abiyu Otslan","Bronze"],
+["National",2013,"OSN","SMAN Banua","Astronomy","Annisa Aulia Rahmah","Bronze"],
+["National",2013,"OSN","Kesatuan Bangsa","Astronomy","Fiqie Amanatia F","Silver"],
+["National",2013,"OSN","Sragen BBS","Astronomy","Felix Setiawan","Silver"],
+["National",2013,"OSN","Kesatuan Bangsa","Biology","Cagar Irwin","Silver"],
+["National",2013,"OSN","Kharisma Bangsa","Biology","Tamara Ey Firsty","Bronze"],
+["National",2013,"OSN","Pribadi Depok","Biology","Rendy Candra","Bronze"],
+["National",2013,"OSN","Semesta","Biology","Khairu Zein","Gold"],
+["National",2013,"OSN","Semesta","Biology","Hana Fauzyyah Hanifin","Silver"],
+["National",2013,"OSN","Semesta","Biology","Rahmat Waluyo","Silver"],
+["National",2013,"OSN","Kesatuan Bangsa","Biology","Muhammad Farhan","Gold"],
+["National",2013,"OSN","Semesta","Biology","Candra Dewi","Bronze"],
+["National",2013,"OSN","Semesta","Economy","Ima Ningtyas C R","Gold"],
+["National",2013,"OSN","Sragen BBS","Economy","Alifan Darul Ilma","Bronze"],
+["National",2013,"OSN","Kesatuan Bangsa","Physics","Albert Duke Tantono","Silver"],
+["National",2013,"OSN","Kesatuan Bangsa","Physics","Abdur Rohman","Bronze"],
+["National",2013,"OSN","Semesta","Physics","Nurul Muizah","Gold"],
+["National",2013,"OSN","Sragen BBS","Physics","Imang Eko Saputro","Silver"],
+["National",2013,"OSN","Kesatuan Bangsa","Physics","Yunus Adu","Silver"],
+["National",2013,"OSN","Kharisma Bangsa","Physics","Faisal Husni","Gold"],
+["National",2013,"OSN","Pribadi Bandung","Physics","Muhammad Hanif Ikhsan","Bronze"],
+["National",2013,"OSN","Semesta","Physics","Atika Nur Rochmah","Silver"],
+["National",2013,"OSN","Fatih","Computer Science","Wira Abdillah Siregar","Bronze"],
+["National",2013,"OSN","Fatih","Computer Science","Yudi Reza Phallaphi","Bronze"],
+["National",2013,"OSN","Pribadi Bandung","Computer Science","Umar Al Farouk","Gold"],
+["National",2013,"OSN","Pribadi Bandung","Computer Science","M Adnan Reza","Bronze"],
+["National",2013,"OSN","Semesta","Computer Science","Zamil Majdi","Silver"],
+["National",2013,"OSN","Sragen BBS","Computer Science","Gentur Waskito","Silver"],
+["National",2013,"OSN","Sragen BBS","Computer Science","Moh Iqbal Kinasih G","Bronze"],
+["National",2013,"OSN","Kesatuan Bangsa","Social Science","Alse Nabilah","Bronze"],
+["National",2013,"OSN","Kesatuan Bangsa","Earth Science","Anisa Novianti","Bronze"],
+["National",2013,"OSN","Kharisma Bangsa","Earth Science","Ghifari Muhammad Syani","Bronze"],
+["National",2013,"OSN","Semesta","Earth Science","Basanda Etavita","Gold"],
+["National",2013,"OSN","SMAN Sumbar","Earth Science","Kazhimah Rosyada","Bronze"],
+["National",2013,"OSN","Sragen BBS","Earth Science","Khoirul Haq Nurul R","Gold"],
+["National",2013,"OSN","Sragen BBS","Earth Science","Paschalis Pindyka A K","Bronze"],
+["National",2013,"OSN","Kesatuan Bangsa","Chemistry","Ramadani Dwi Kurniawan","Bronze"],
+["National",2013,"OSN","Pribadi Bandung","Chemistry","Maulinda Kusumawardani","Silver"],
+["National",2013,"OSN","Pribadi Bandung","Chemistry","Alief Moulana","Bronze"],
+["National",2013,"OSN","Semesta","Chemistry","Nindya Widita A","Silver"],
+["National",2013,"OSN","Sragen BBS","Chemistry","Yoga Rafinika","Bronze"],
+["National",2013,"OSN","Sragen BBS","Chemistry","Abu Bakar Abdul Hamid","Bronze"],
+["National",2013,"OSN","Fatih","Mathematics","Mufti Al Ummam","Silver"],
+["National",2013,"OSN","Kharisma Bangsa","Mathematics","Natasha","Silver"],
+["National",2013,"OSN","Pribadi Depok","Mathematics","Rizky Yudha Irawan","Silver"],
+["National",2013,"OSN","Sragen BBS","Mathematics","Dhea Arrokhman Y C","Silver"],
+["National",2013,"OSN","Kharisma Bangsa","Mathematics","Farras Muhammad Hibban Fadila","Silver"],
+["National",2013,"OSN","Semesta","Mathematics","Adiba Nur Ashri Ramadhani","Bronze"],
+];
+
+const NM={"Kesatuan bangsa":"Kesatuan Bangsa","Cahaya Rancamaya Islamic Boarding School":"Cahaya Rancamaya","Semesta Bilingual Boarding School":"Semesta","Semesta 3":"Semesta","Semesta CG":"Semesta","Fatih Bilingual School":"Fatih","TNA Fatih Bilingual School":"Fatih","Fatih Putra":"Fatih","Mega Islamic Boarding School":"Mega Islamic","SMAN Banua Kalimantan Selatan":"SMAN Banua","SMAN 1 Sumatera Barat":"SMAN Sumbar"};
+const NF={"Astronomi":"Astronomy","Biologi":"Biology","Fisika":"Physics","Matematika SMA":"Mathematics","Matematika SMP":"Mathematics","Ekonomi":"Economy","Kebumian":"Earth Science","Kimia":"Chemistry","Informatika":"Computer Science","IPA":"Science","Social Science":"Social Science"};
+const MW={Gold:4,Silver:3,Bronze:2,HM:1};
+const MC={Gold:"#D97706",Silver:"#64748B",Bronze:"#92400E",HM:"#7C3AED"};
+const ME={Gold:"🥇",Silver:"🥈",Bronze:"🥉",HM:"🏅"};
+const SC={"Kesatuan Bangsa":"#1D4ED8","Kharisma Bangsa":"#059669","Semesta":"#7C3AED","Pribadi Bandung":"#D97706","Pribadi Depok":"#EA580C","Cahaya Rancamaya":"#DB2777","Fatih":"#0D9488","Mega Islamic":"#4F46E5","Sragen BBS":"#65A30D","SMAN Banua":"#0891B2","SMAN Sumbar":"#DC2626"};
+
+function Dashboard() {
+  const [level, setLevel] = useState("All");
+  const [tab, setTab] = useState("overview");
+
+  const data = useMemo(() => RAW.map(r => ({
+    level:r[0], year:r[1], comp:r[2],
+    inst: NM[r[3]]||r[3],
+    field: NF[r[4]]||r[4],
+    name:r[5], award:r[6]
+  })), []);
+
+  const filtered = useMemo(() => data.filter(d => level==="All"||d.level===level), [data,level]);
+
+  const totals = useMemo(()=>{
+    const t={Gold:0,Silver:0,Bronze:0,HM:0};
+    filtered.forEach(d=>{ if(t[d.award]!==undefined) t[d.award]++; });
+    return t;
+  },[filtered]);
+
+  const bySchool = useMemo(()=>{
+    const m={};
+    filtered.forEach(d=>{
+      if(!m[d.inst]) m[d.inst]={Gold:0,Silver:0,Bronze:0,HM:0,total:0,score:0};
+      m[d.inst][d.award]=(m[d.inst][d.award]||0)+1;
+      m[d.inst].total++; m[d.inst].score+=MW[d.award]||0;
+    });
+    return Object.entries(m).sort((a,b)=>b[1].score-a[1].score);
+  },[filtered]);
+
+  const byYear = useMemo(()=>{
+    const m={};
+    filtered.forEach(d=>{
+      if(!m[d.year]) m[d.year]={Gold:0,Silver:0,Bronze:0,HM:0};
+      m[d.year][d.award]=(m[d.year][d.award]||0)+1;
+    });
+    return Object.entries(m).sort((a,b)=>a[0]-b[0]);
+  },[filtered]);
+
+  const byField = useMemo(()=>{
+    const m={};
+    filtered.forEach(d=>{ m[d.field]=(m[d.field]||0)+1; });
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  },[filtered]);
+
+  const champions = useMemo(()=>{
+    const m={};
+    filtered.forEach(d=>{
+      if(!m[d.name]) m[d.name]={medals:[],insts:new Set()};
+      m[d.name].medals.push(d); m[d.name].insts.add(d.inst);
+    });
+    return Object.entries(m).filter(([,v])=>v.medals.length>=2)
+      .sort((a,b)=>{
+        const sa=a[1].medals.reduce((s,x)=>s+(MW[x.award]||0),0);
+        const sb=b[1].medals.reduce((s,x)=>s+(MW[x.award]||0),0);
+        return sb-sa;
+      });
+  },[filtered]);
+
+  const maxBar=bySchool.length>0?bySchool[0][1].score:1;
+  const maxY=byYear.length>0?Math.max(...byYear.map(([,v])=>v.Gold+v.Silver+v.Bronze+v.HM)):1;
+  const card={background:"#FFFFFF",border:"1px solid #E2E8F0",borderRadius:12,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.06)"};
+  const pill=(active,onClick,label)=>(
+    <button onClick={onClick} style={{padding:"7px 18px",borderRadius:24,border:`1.5px solid ${active?"#1D4ED8":"#CBD5E1"}`,background:active?"#1D4ED8":"white",color:active?"white":"#475569",cursor:"pointer",fontSize:13,fontWeight:active?"600":"400",transition:"all 0.15s"}}>{label}</button>
+  );
+
+  return (
+    <div style={{fontFamily:"'Segoe UI',system-ui,sans-serif",background:"#F8FAFC",minHeight:"100vh",color:"#1E293B"}}>
+      <div style={{background:"white",borderBottom:"1px solid #E2E8F0",padding:"24px 36px 0",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:12,marginBottom:20}}>
+          <div>
+            <div style={{fontSize:11,letterSpacing:"0.2em",color:"#3B82F6",textTransform:"uppercase",fontWeight:600,marginBottom:6}}>Eduversal Partner Schools</div>
+            <h1 style={{fontSize:26,fontWeight:700,color:"#0F172A",margin:0}}>🏆 Academic Olympiad Excellence</h1>
+            <p style={{color:"#94A3B8",fontSize:13,margin:"5px 0 0"}}>525 medals · National & International · 2013–2025</p>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+            {["All","International","National"].map(l=>pill(level===l,()=>setLevel(l),l==="All"?"🌐 All":l==="International"?"🌍 International":"🇮🇩 National"))}
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:0}}>
+          {[
+            {label:"Total",value:filtered.length,color:"#3B82F6",bg:"#EFF6FF",icon:"🎖️"},
+            {label:"Gold",value:totals.Gold,color:"#D97706",bg:"#FFFBEB",icon:"🥇"},
+            {label:"Silver",value:totals.Silver,color:"#475569",bg:"#F8FAFC",icon:"🥈"},
+            {label:"Bronze + HM",value:totals.Bronze+totals.HM,color:"#92400E",bg:"#FEF3C7",icon:"🥉"},
+          ].map(k=>(
+            <div key={k.label} style={{background:k.bg,borderTop:`3px solid ${k.color}`,borderRadius:"0 0 8px 8px",padding:"14px 16px",textAlign:"center"}}>
+              <div style={{fontSize:22}}>{k.icon}</div>
+              <div style={{fontSize:26,fontWeight:700,color:k.color}}>{k.value}</div>
+              <div style={{fontSize:11,color:"#64748B",fontWeight:500,marginTop:2}}>{k.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"flex",gap:0,marginTop:16}}>
+          {[["overview","📊 Overview"],["schools","🏫 Schools"],["timeline","📅 Timeline"],["champions","⭐ Champions"]].map(([id,label])=>(
+            <button key={id} onClick={()=>setTab(id)} style={{padding:"10px 20px",border:"none",borderBottom:`2.5px solid ${tab===id?"#1D4ED8":"transparent"}`,background:"transparent",color:tab===id?"#1D4ED8":"#64748B",cursor:"pointer",fontSize:13,fontWeight:tab===id?600:400,transition:"all 0.15s"}}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{padding:"24px 36px"}}>
+        {tab==="overview" && (
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+            <div style={card}>
+              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>MEDAL DISTRIBUTION</div>
+              {["Gold","Silver","Bronze","HM"].map(m=>(
+                <div key={m} style={{marginBottom:14}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                    <span style={{fontSize:13,fontWeight:500}}>{ME[m]} {m==="HM"?"Honorable Mention":m}</span>
+                    <span style={{fontWeight:700,color:MC[m]}}>{totals[m]}</span>
+                  </div>
+                  <div style={{height:7,background:"#F1F5F9",borderRadius:4,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${(totals[m]/(filtered.length||1))*100}%`,background:MC[m],borderRadius:4}}/>
+                  </div>
+                </div>
+              ))}
+              <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid #F1F5F9",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                <div style={{background:"#FEF9C3",borderRadius:8,padding:"10px 14px",textAlign:"center"}}>
+                  <div style={{fontSize:18,fontWeight:700,color:"#B45309"}}>{bySchool.length}</div>
+                  <div style={{fontSize:11,color:"#92400E"}}>Active Schools</div>
+                </div>
+                <div style={{background:"#EFF6FF",borderRadius:8,padding:"10px 14px",textAlign:"center"}}>
+                  <div style={{fontSize:18,fontWeight:700,color:"#1D4ED8"}}>{[...new Set(filtered.map(d=>d.year))].length}</div>
+                  <div style={{fontSize:11,color:"#1E40AF"}}>Years of Data</div>
+                </div>
+              </div>
+            </div>
+            <div style={card}>
+              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>TOP SUBJECTS</div>
+              {byField.slice(0,9).map(([f,cnt],i)=>(
+                <div key={f} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                  <div style={{width:18,fontSize:11,color:"#94A3B8",textAlign:"right",flexShrink:0}}>{i+1}</div>
+                  <div style={{flex:1,fontSize:13}}>{f}</div>
+                  <div style={{width:100,height:6,background:"#F1F5F9",borderRadius:3}}>
+                    <div style={{height:"100%",width:`${(cnt/byField[0][1])*100}%`,background:`hsl(${220-i*18},70%,55%)`,borderRadius:3}}/>
+                  </div>
+                  <div style={{width:28,textAlign:"right",fontSize:13,fontWeight:600,color:"#475569"}}>{cnt}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{...card,gridColumn:"1 / -1"}}>
+              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>MEDALS BY YEAR</div>
+              <div style={{display:"flex",alignItems:"flex-end",gap:5,height:220}}>
+                {byYear.map(([year,v])=>{
+                  const total=v.Gold+v.Silver+v.Bronze+v.HM;
+                  const h=(total/maxY)*200;
+                  return (
+                    <div key={year} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                      <div style={{fontSize:10,color:"#94A3B8",fontWeight:600}}>{total}</div>
+                      <div style={{width:"100%",height:h,display:"flex",flexDirection:"column",justifyContent:"flex-end",borderRadius:"4px 4px 0 0",overflow:"hidden"}}>
+                        {[["HM",v.HM],["Bronze",v.Bronze],["Silver",v.Silver],["Gold",v.Gold]].map(([m,cnt])=>cnt>0&&(
+                          <div key={m} style={{width:"100%",flex:cnt,background:MC[m],minHeight:2}}/>
+                        ))}
+                      </div>
+                      <div style={{fontSize:9,color:"#94A3B8",transform:"rotate(-45deg)",transformOrigin:"top center",marginTop:4,whiteSpace:"nowrap"}}>{year}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",gap:16,marginTop:16,justifyContent:"center"}}>
+                {["Gold","Silver","Bronze","HM"].map(m=>(
+                  <div key={m} style={{display:"flex",alignItems:"center",gap:5}}>
+                    <div style={{width:10,height:10,borderRadius:2,background:MC[m]}}/>
+                    <span style={{fontSize:11,color:"#64748B"}}>{m}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==="schools" && (
+          <div>
+            <p style={{fontSize:13,color:"#94A3B8",marginBottom:16}}>Ranked by weighted score (Gold×4, Silver×3, Bronze×2, HM×1)</p>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {bySchool.map(([school,st],i)=>{
+                const color=SC[school]||"#475569";
+                const badge=i===0?"#F59E0B":i===1?"#94A3B8":i===2?"#B45309":null;
+                return (
+                  <div key={school} style={{...card,padding:"14px 18px",borderLeft:`4px solid ${color}`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                      <div style={{width:30,height:30,borderRadius:"50%",background:badge||"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:badge?"white":"#64748B",flexShrink:0}}>{i+1}</div>
+                      <div style={{flex:1,minWidth:120}}>
+                        <div style={{fontWeight:600,fontSize:15,color:"#0F172A"}}>{school}</div>
+                        <div style={{fontSize:12,color:"#94A3B8",marginTop:1}}>{st.total} medals · Score: <b style={{color}}>{st.score}</b></div>
+                      </div>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                        {["Gold","Silver","Bronze","HM"].map(m=>st[m]>0&&(
+                          <span key={m} style={{padding:"3px 9px",borderRadius:20,background:`${MC[m]}18`,color:MC[m],fontSize:12,fontWeight:600,border:`1px solid ${MC[m]}35`}}>{ME[m]} {st[m]}</span>
+                        ))}
+                      </div>
+                      <div style={{width:120}}>
+                        <div style={{height:6,background:"#F1F5F9",borderRadius:3,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:`${(st.score/maxBar)*100}%`,background:color,borderRadius:3}}/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {tab==="timeline" && (
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {[...filtered].sort((a,b)=>b.year-a.year).slice(0,60).map((d,i)=>(
+              <div key={i} style={{...card,padding:"10px 14px",borderLeft:`3px solid ${MC[d.award]}`,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                <div style={{fontSize:20,width:28,textAlign:"center"}}>{ME[d.award]}</div>
+                <div style={{flex:1,minWidth:120}}>
+                  <div style={{fontWeight:600,fontSize:13,color:"#0F172A"}}>{d.name}</div>
+                  <div style={{fontSize:11,color:"#94A3B8"}}>{d.inst}</div>
+                </div>
+                <div style={{fontSize:12,color:"#475569",textAlign:"center"}}>
+                  <div style={{fontWeight:500}}>{d.comp}</div>
+                  <div style={{color:"#94A3B8"}}>{d.field}</div>
+                </div>
+                <span style={{padding:"3px 10px",borderRadius:20,background:"#F1F5F9",fontSize:11,color:"#3B82F6",fontWeight:600}}>{d.year}</span>
+                <span style={{fontSize:11,color:"#94A3B8"}}>{d.level==="International"?"🌍":"🇮🇩"}</span>
+              </div>
+            ))}
+            {filtered.length>60&&<div style={{textAlign:"center",color:"#94A3B8",fontSize:12,padding:8}}>Showing 60 of {filtered.length} records</div>}
+          </div>
+        )}
+
+        {tab==="champions" && (
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <p style={{fontSize:13,color:"#94A3B8",margin:"0 0 4px"}}>Students with 2+ medals across any competition</p>
+            {champions.map(([name,v],i)=>{
+              const score=v.medals.reduce((s,m)=>s+(MW[m.award]||0),0);
+              const hasGold=v.medals.some(m=>m.award==="Gold");
+              return (
+                <div key={name} style={{...card,borderLeft:`4px solid ${hasGold?MC.Gold:"#CBD5E1"}`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                    <div style={{fontSize:26}}>{hasGold?"⭐":"🌟"}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontWeight:700,fontSize:15,color:"#0F172A"}}>{name}</div>
+                      <div style={{fontSize:12,color:"#94A3B8"}}>{[...v.insts].join(" · ")}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:16,fontWeight:700,color:"#1D4ED8"}}>{v.medals.length} medals</div>
+                      <div style={{fontSize:11,color:"#94A3B8"}}>Score: {score}</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
+                    {v.medals.map((m,j)=>(
+                      <span key={j} style={{padding:"3px 9px",borderRadius:20,background:`${MC[m.award]}15`,color:MC[m.award],fontSize:11,border:`1px solid ${MC[m.award]}30`,fontWeight:500}}>
+                        {ME[m.award]} {m.year} {m.comp} {m.level==="International"?"🌍":"🇮🇩"}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Dashboard />);
+</script>
+</body>
+</html>
