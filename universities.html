@@ -21,18 +21,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:linear-gradient(150deg,#EEF2FF 0%,#F1F5FE 40%,#E8F4FD 75%,#F0FDF4 100%) fixed;background-attachment:fixed}
+body{background:linear-gradient(135deg,#0c0c0c 0%,#0a1628 100%);min-height:100vh;}.bg-orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.22;pointer-events:none;animation:orbf 20s ease-in-out infinite;}.bg-orb-1{width:500px;height:500px;background:linear-gradient(135deg,#14b8a6,#0d9488);top:-150px;right:-100px;}.bg-orb-2{width:380px;height:380px;background:linear-gradient(135deg,#6366f1,#06b6d4);bottom:-80px;left:-80px;animation-delay:-8s;}@keyframes orbf{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(40px,-40px) scale(1.1);}}#back-btn:hover{background:rgba(20,184,166,.15)!important;border-color:rgba(20,184,166,.35)!important;}
 #back-btn{
-  position:fixed;top:14px;left:16px;z-index:9999;
+  position:fixed;top:18px;left:20px;z-index:9999;
   display:inline-flex;align-items:center;gap:6px;
   padding:7px 14px;
-  background:rgba(15,23,42,0.85);
+  background:rgba(20,20,40,0.75);
   backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.11);
   border-radius:10px;
   color:#fff;font-size:13px;font-weight:500;
   text-decoration:none;
-  font-family:'Segoe UI',system-ui,sans-serif;
+  font-family:'DM Sans',system-ui,sans-serif;
   transition:background 0.2s;
 }
 #back-btn:hover{background:rgba(15,23,42,0.97);}
@@ -45,7 +45,7 @@ body{background:linear-gradient(150deg,#EEF2FF 0%,#F1F5FE 40%,#E8F4FD 75%,#F0FDF
 .pill-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.18)!important;}
 
 .tab-btn{transition:color .15s,background .15s!important;}
-.tab-btn:hover{background:rgba(59,130,246,.07)!important;color:#1D4ED8!important;border-radius:6px 6px 0 0;}
+.tab-btn:hover{background:rgba(20,184,166,.08)!important;color:#14b8a6!important;border-radius:6px 6px 0 0;}
 
 .uni-card{transition:transform .18s,box-shadow .18s;}
 .uni-card:hover{transform:translateY(-4px);box-shadow:0 10px 32px rgba(99,102,241,0.14)!important;}
@@ -61,8 +61,11 @@ body{background:linear-gradient(150deg,#EEF2FF 0%,#F1F5FE 40%,#E8F4FD 75%,#F0FDF
 
 input:focus,select:focus{border-color:#6366F1!important;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
+<div class="bg-orb bg-orb-1"></div><div class="bg-orb bg-orb-2"></div>
 <a id="back-btn" href="index.html">
   <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
   Research Hub
@@ -309,7 +312,7 @@ function qsBadge(rank){
   if(rank<=25)return{bg:"linear-gradient(135deg,#DBEAFE,#BFDBFE)",color:"#1E40AF",border:"#93C5FD"};
   if(rank<=50)return{bg:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",color:"#4338CA",border:"#A5B4FC"};
   if(rank<=100)return{bg:"linear-gradient(135deg,#F3E8FF,#E9D5FF)",color:"#6D28D9",border:"#C4B5FD"};
-  return{bg:"#F1F5F9",color:"#475569",border:"#CBD5E1"};
+  return{bg:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.65)",border:"#CBD5E1"};
 }
 
 function Dashboard(){
@@ -384,18 +387,18 @@ function Dashboard(){
   const maxYear=byYear.length?Math.max(...byYear.map(([,v])=>v)):1;
   const bestRank=Math.min(...data.filter(d=>d.rank).map(d=>d.rank));
 
-  const card={background:"rgba(255,255,255,0.82)",backdropFilter:"blur(12px)",border:"1px solid rgba(203,213,234,0.7)",borderRadius:12,padding:20,boxShadow:"0 4px 16px rgba(99,102,241,0.09),0 1px 4px rgba(0,0,0,0.05)"};
+  const card={background:"rgba(255,255,255,0.07)",backdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.11)",borderRadius:12,padding:20,boxShadow:"0 20px 50px rgba(0,0,0,0.4)"};
 
   return (
-    <div style={{fontFamily:"'Segoe UI',system-ui,sans-serif",background:"transparent",minHeight:"100vh",color:"#1E293B"}}>
+    <div style={{fontFamily:"DM Sans,system-ui,sans-serif",background:"transparent",minHeight:"100vh",color:"rgba(255,255,255,0.06)"}}>
 
       {/* ── HEADER ── */}
-      <div style={{background:"linear-gradient(135deg,rgba(255,255,255,0.95) 0%,rgba(238,242,255,0.92) 50%,rgba(224,236,252,0.90) 100%)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(196,212,240,0.8)",padding:"24px 36px 0",boxShadow:"0 4px 20px rgba(99,102,241,0.10)"}}>
+      <div style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(255,255,255,0.09)",padding:"24px 36px 0"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:12,marginBottom:20}}>
           <div>
-            <div style={{fontSize:11,letterSpacing:"0.2em",color:"#3B82F6",textTransform:"uppercase",fontWeight:600,marginBottom:6}}>Eduversal Partner Schools</div>
-            <h1 style={{fontSize:26,fontWeight:700,color:"#0F172A",margin:0}}>🎓 Top University Alumni</h1>
-            <p style={{color:"#94A3B8",fontSize:13,margin:"5px 0 0"}}>{data.length} alumni · {byUni.length} universities · {byCountry.length} countries · 2007–2025</p>
+            <div style={{fontSize:11,letterSpacing:"0.2em",color:"#14b8a6",textTransform:"uppercase",fontWeight:600,marginBottom:6}}>Eduversal Partner Schools</div>
+            <h1 style={{fontSize:"clamp(1.6rem,3vw,2.2rem)",fontWeight:700,color:"#ffffff",margin:0,fontFamily:"Playfair Display,serif"}}>🎓 Top University Alumni</h1>
+            <p style={{color:"rgba(255,255,255,0.42)",fontSize:13,margin:"5px 0 0"}}>{data.length} alumni · {byUni.length} universities · {byCountry.length} countries · 2007–2025</p>
           </div>
         </div>
 
@@ -409,14 +412,14 @@ function Dashboard(){
             <div key={k.label} className="stat-tile" style={{background:k.bg,borderTop:`3px solid ${k.color}`,borderRadius:"0 0 8px 8px",padding:"14px 16px",textAlign:"center"}}>
               <div style={{fontSize:22}}>{k.icon}</div>
               <div style={{fontSize:26,fontWeight:700,color:k.color}}>{k.value}</div>
-              <div style={{fontSize:11,color:"#64748B",fontWeight:500,marginTop:2}}>{k.label}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",fontWeight:500,marginTop:2}}>{k.label}</div>
             </div>
           ))}
         </div>
 
         <div style={{display:"flex",gap:0,marginTop:16}}>
           {[["overview","📊 Overview"],["universities","🏛️ Universities"],["byschool","🏫 By School"],["alumni","👤 Alumni"]].map(([id,label])=>(
-            <button key={id} onClick={()=>setTab(id)} className="tab-btn" style={{padding:"10px 20px",border:"none",borderBottom:`2.5px solid ${tab===id?"#1D4ED8":"transparent"}`,background:"transparent",color:tab===id?"#1D4ED8":"#64748B",cursor:"pointer",fontSize:13,fontWeight:tab===id?600:400,transition:"all 0.15s"}}>{label}</button>
+            <button key={id} onClick={()=>setTab(id)} className="tab-btn" style={{padding:"10px 20px",border:"none",borderBottom:`2.5px solid ${tab===id?"#14b8a6":"transparent"}`,background:"transparent",color:tab===id?"#14b8a6":"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:13,fontWeight:tab===id?600:400,transition:"all 0.15s"}}>{label}</button>
           ))}
         </div>
       </div>
@@ -430,21 +433,21 @@ function Dashboard(){
 
             {/* Top Universities bar */}
             <div style={{...card,gridColumn:"1 / -1"}}>
-              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:18}}>TOP UNIVERSITIES BY ALUMNI COUNT</div>
+              <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.42)",letterSpacing:"0.08em",marginBottom:18}}>TOP UNIVERSITIES BY ALUMNI COUNT</div>
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {byUni.slice(0,12).map(([uni,st],i)=>{
                   const badge=qsBadge(st.rank);
                   const pct=(st.count/maxUni)*100;
                   return (
                     <div key={uni} style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{width:20,fontSize:11,color:"#94A3B8",textAlign:"right",flexShrink:0,fontWeight:600}}>{i+1}</div>
-                      <div style={{flex:"0 0 220px",fontSize:13,fontWeight:500,color:"#1E293B",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{uni}</div>
-                      <div style={{fontSize:12,color:"#94A3B8",flexShrink:0,width:60,textAlign:"right"}}>{CF[st.country]||"🌐"}</div>
+                      <div style={{width:20,fontSize:11,color:"rgba(255,255,255,0.42)",textAlign:"right",flexShrink:0,fontWeight:600}}>{i+1}</div>
+                      <div style={{flex:"0 0 220px",fontSize:13,fontWeight:500,color:"rgba(255,255,255,0.06)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{uni}</div>
+                      <div style={{fontSize:12,color:"rgba(255,255,255,0.42)",flexShrink:0,width:60,textAlign:"right"}}>{CF[st.country]||"🌐"}</div>
                       {badge
                         ?<span style={{padding:"2px 8px",borderRadius:8,background:badge.bg,color:badge.color,border:`1px solid ${badge.border}`,fontSize:11,fontWeight:700,flexShrink:0,width:60,textAlign:"center"}}>#{st.rank}</span>
                         :<span style={{width:60,flexShrink:0}}/>
                       }
-                      <div style={{flex:1,height:8,background:"#DDE5F5",borderRadius:4,overflow:"hidden"}}>
+                      <div style={{flex:1,height:8,background:"rgba(255,255,255,0.09)",borderRadius:4,overflow:"hidden"}}>
                         <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#3B82F6,#6366F1)",borderRadius:4,transition:"width 0.6s ease"}}/>
                       </div>
                       <div style={{width:30,textAlign:"right",fontSize:14,fontWeight:700,color:"#1D4ED8",flexShrink:0}}>{st.count}</div>
@@ -456,30 +459,30 @@ function Dashboard(){
 
             {/* Countries */}
             <div style={card}>
-              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>DESTINATION COUNTRIES</div>
+              <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.42)",letterSpacing:"0.08em",marginBottom:16}}>DESTINATION COUNTRIES</div>
               {byCountry.map(([country,count])=>(
                 <div key={country} style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}>
                   <span style={{fontSize:18,flexShrink:0,width:28}}>{CF[country]||"🌐"}</span>
-                  <div style={{flex:1,fontSize:13,color:"#334155"}}>{country}</div>
-                  <div style={{width:110,height:7,background:"#DDE5F5",borderRadius:4,flexShrink:0,overflow:"hidden"}}>
+                  <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,0.8)"}}>{country}</div>
+                  <div style={{width:110,height:7,background:"rgba(255,255,255,0.09)",borderRadius:4,flexShrink:0,overflow:"hidden"}}>
                     <div style={{height:"100%",width:`${(count/maxCountry)*100}%`,background:"linear-gradient(90deg,#10B981,#059669)",borderRadius:4}}/>
                   </div>
-                  <div style={{width:28,textAlign:"right",fontSize:13,fontWeight:600,color:"#475569",flexShrink:0}}>{count}</div>
+                  <div style={{width:28,textAlign:"right",fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.65)",flexShrink:0}}>{count}</div>
                 </div>
               ))}
             </div>
 
             {/* Year trend */}
             <div style={card}>
-              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>ALUMNI BY GRADUATION YEAR</div>
+              <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.42)",letterSpacing:"0.08em",marginBottom:16}}>ALUMNI BY GRADUATION YEAR</div>
               <div style={{display:"flex",alignItems:"flex-end",gap:4,height:310}}>
                 {byYear.map(([year,count])=>{
                   const h=(count/maxYear)*280;
                   return (
                     <div key={year} className="yr-bar" title={`${year}: ${count} alumni`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                      <div style={{fontSize:9,color:"#94A3B8",fontWeight:600}}>{count}</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",fontWeight:600}}>{count}</div>
                       <div style={{width:"100%",height:h,background:"linear-gradient(180deg,#818CF8,#4F46E5)",borderRadius:"3px 3px 0 0"}}/>
-                      <div style={{fontSize:8,color:"#94A3B8",transform:"rotate(-45deg)",transformOrigin:"top center",marginTop:4,whiteSpace:"nowrap"}}>{year}</div>
+                      <div style={{fontSize:8,color:"rgba(255,255,255,0.42)",transform:"rotate(-45deg)",transformOrigin:"top center",marginTop:4,whiteSpace:"nowrap"}}>{year}</div>
                     </div>
                   );
                 })}
@@ -488,24 +491,24 @@ function Dashboard(){
 
             {/* Schools */}
             <div style={{...card,gridColumn:"1 / -1"}}>
-              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>ALUMNI BY SCHOOL</div>
+              <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.42)",letterSpacing:"0.08em",marginBottom:16}}>ALUMNI BY SCHOOL</div>
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 {bySchool.map(([school,st])=>{
                   const sc=SC[school]||"#6366F1";
                   return (
                     <div key={school} style={{flex:"1 1 180px",background:`linear-gradient(135deg,${sc}12,${sc}06)`,border:`1px solid ${sc}30`,borderRadius:10,padding:"14px 16px"}}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                        <div style={{fontSize:13,fontWeight:700,color:"#0F172A"}}>{school}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:"#ffffff"}}>{school}</div>
                         <div style={{fontSize:20,fontWeight:800,color:sc}}>{st.count}</div>
                       </div>
                       <div style={{display:"flex",gap:10}}>
                         <div style={{textAlign:"center"}}>
                           <div style={{fontSize:15,fontWeight:700,color:sc}}>{st.unis.size}</div>
-                          <div style={{fontSize:10,color:"#94A3B8"}}>Universities</div>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,0.42)"}}>Universities</div>
                         </div>
                         <div style={{textAlign:"center"}}>
                           <div style={{fontSize:15,fontWeight:700,color:sc}}>{st.countries.size}</div>
-                          <div style={{fontSize:10,color:"#94A3B8"}}>Countries</div>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,0.42)"}}>Countries</div>
                         </div>
                       </div>
                     </div>
@@ -523,14 +526,14 @@ function Dashboard(){
             <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:16}}>
               <div style={{display:"flex",gap:6,flex:1,flexWrap:"wrap"}}>
                 {["All",...byCountry.map(([c])=>c)].map(c=>(
-                  <button key={c} onClick={()=>setCountryFilter(c)} className="pill-btn" style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${countryFilter===c?"#1D4ED8":"#C7D2E8"}`,background:countryFilter===c?"#1D4ED8":"rgba(238,242,255,0.8)",color:countryFilter===c?"white":"#475569",cursor:"pointer",fontSize:12,fontWeight:countryFilter===c?600:400,transition:"all 0.15s"}}>
+                  <button key={c} onClick={()=>setCountryFilter(c)} className="pill-btn" style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${countryFilter===c?"#1D4ED8":"rgba(255,255,255,0.15)"}`,background:countryFilter===c?"#1D4ED8":"rgba(255,255,255,0.06)",color:countryFilter===c?"white":"rgba(255,255,255,0.65)",cursor:"pointer",fontSize:12,fontWeight:countryFilter===c?600:400,transition:"all 0.15s"}}>
                     {c==="All"?"🌐 All":`${CF[c]||""} ${c}`}
                   </button>
                 ))}
               </div>
               <div style={{display:"flex",gap:6,flexShrink:0}}>
-                <button onClick={()=>setSortUni("count")} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${sortUni==="count"?"#6366F1":"#C7D2E8"}`,background:sortUni==="count"?"#6366F1":"rgba(238,242,255,0.8)",color:sortUni==="count"?"white":"#475569",cursor:"pointer",fontSize:12,fontWeight:sortUni==="count"?600:400}}>Most Alumni</button>
-                <button onClick={()=>setSortUni("rank")} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${sortUni==="rank"?"#6366F1":"#C7D2E8"}`,background:sortUni==="rank"?"#6366F1":"rgba(238,242,255,0.8)",color:sortUni==="rank"?"white":"#475569",cursor:"pointer",fontSize:12,fontWeight:sortUni==="rank"?600:400}}>Best QS Rank</button>
+                <button onClick={()=>setSortUni("count")} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${sortUni==="count"?"#14b8a6":"rgba(255,255,255,0.15)"}`,background:sortUni==="count"?"rgba(20,184,166,0.9)":"rgba(255,255,255,0.06)",color:sortUni==="count"?"white":"rgba(255,255,255,0.65)",cursor:"pointer",fontSize:12,fontWeight:sortUni==="count"?600:400}}>Most Alumni</button>
+                <button onClick={()=>setSortUni("rank")} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${sortUni==="rank"?"#14b8a6":"rgba(255,255,255,0.15)"}`,background:sortUni==="rank"?"rgba(20,184,166,0.9)":"rgba(255,255,255,0.06)",color:sortUni==="rank"?"white":"rgba(255,255,255,0.65)",cursor:"pointer",fontSize:12,fontWeight:sortUni==="rank"?600:400}}>Best QS Rank</button>
               </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
@@ -542,13 +545,13 @@ function Dashboard(){
                   <div key={uni} className="uni-card" style={{...card,padding:"16px 18px"}}>
                     <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8,marginBottom:12}}>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:14,fontWeight:700,color:"#0F172A",lineHeight:1.35,marginBottom:4}}>{uni}</div>
-                        <div style={{fontSize:12,color:"#64748B"}}>{CF[st.country]||"🌐"} {st.country}</div>
+                        <div style={{fontSize:14,fontWeight:700,color:"#ffffff",lineHeight:1.35,marginBottom:4}}>{uni}</div>
+                        <div style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>{CF[st.country]||"🌐"} {st.country}</div>
                       </div>
                       {badge&&(
                         <div style={{flexShrink:0,textAlign:"center"}}>
                           <div style={{padding:"4px 10px",borderRadius:10,background:badge.bg,color:badge.color,border:`1px solid ${badge.border}`,fontSize:12,fontWeight:800}}>#{st.rank}</div>
-                          <div style={{fontSize:9,color:"#94A3B8",marginTop:2}}>QS 2026</div>
+                          <div style={{fontSize:9,color:"rgba(255,255,255,0.42)",marginTop:2}}>QS 2026</div>
                         </div>
                       )}
                     </div>
@@ -557,7 +560,7 @@ function Dashboard(){
                         <span key={sch} style={{padding:"2px 8px",borderRadius:10,background:`${SC[sch]||"#6366F1"}15`,color:SC[sch]||"#6366F1",fontSize:11,border:`1px solid ${SC[sch]||"#6366F1"}25`,fontWeight:600}}>{sch} ×{cnt}</span>
                       ))}
                     </div>
-                    <div style={{paddingTop:8,borderTop:"1px solid #EEF2F8",fontSize:12,color:"#94A3B8"}}>{st.count} alumni</div>
+                    <div style={{paddingTop:8,borderTop:"1px solid rgba(255,255,255,0.08)",fontSize:12,color:"rgba(255,255,255,0.42)"}}>{st.count} alumni</div>
                   </div>
                 );
               })}
@@ -575,22 +578,22 @@ function Dashboard(){
                 <div key={school} className="school-block" style={{...card,borderLeft:`4px solid ${sc}`,padding:"18px 20px"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
                     <div>
-                      <div style={{fontSize:17,fontWeight:700,color:"#0F172A"}}>{school}</div>
-                      <div style={{fontSize:12,color:"#94A3B8",marginTop:3}}>{st.count} alumni · {st.unis.size} universities · {st.countries.size} countries</div>
+                      <div style={{fontSize:17,fontWeight:700,color:"#ffffff"}}>{school}</div>
+                      <div style={{fontSize:12,color:"rgba(255,255,255,0.42)",marginTop:3}}>{st.count} alumni · {st.unis.size} universities · {st.countries.size} countries</div>
                     </div>
                     <div style={{width:44,height:44,borderRadius:"50%",background:`${sc}18`,border:`2px solid ${sc}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:800,color:sc}}>{st.count}</div>
                   </div>
 
                   <div style={{marginBottom:14}}>
-                    <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:"0.06em",marginBottom:8}}>TOP UNIVERSITIES</div>
+                    <div style={{fontSize:11,fontWeight:600,color:"rgba(255,255,255,0.42)",letterSpacing:"0.06em",marginBottom:8}}>TOP UNIVERSITIES</div>
                     {topUniList.map(([uni,cnt],j)=>{
                       const uniInfo=byUni.find(([u])=>u===uni);
                       const rank=uniInfo?uniInfo[1].rank:null;
                       const badge=qsBadge(rank);
                       return (
-                        <div key={uni} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,padding:"4px 0",borderBottom:j<topUniList.length-1?"1px dashed #EEF2F8":"none"}}>
-                          <div style={{width:16,fontSize:11,color:"#94A3B8",fontWeight:700}}>{j+1}</div>
-                          <div style={{flex:1,fontSize:12,color:"#1E293B",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{uni}</div>
+                        <div key={uni} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,padding:"4px 0",borderBottom:j<topUniList.length-1?"1px dashed rgba(255,255,255,0.1)":"none"}}>
+                          <div style={{width:16,fontSize:11,color:"rgba(255,255,255,0.42)",fontWeight:700}}>{j+1}</div>
+                          <div style={{flex:1,fontSize:12,color:"rgba(255,255,255,0.06)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{uni}</div>
                           {badge&&<span style={{padding:"1px 7px",borderRadius:6,background:badge.bg,color:badge.color,fontSize:10,fontWeight:700,flexShrink:0}}>#{rank}</span>}
                           <div style={{fontSize:12,fontWeight:700,color:sc,flexShrink:0}}>×{cnt}</div>
                         </div>
@@ -598,13 +601,13 @@ function Dashboard(){
                     })}
                   </div>
 
-                  <div style={{paddingTop:10,borderTop:"1px solid #EEF2F8",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{paddingTop:10,borderTop:"1px solid rgba(255,255,255,0.08)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
                       {[...st.countries].map(c=>(
                         <span key={c} title={c} style={{fontSize:16}}>{CF[c]||"🌐"}</span>
                       ))}
                     </div>
-                    <div style={{fontSize:11,color:"#94A3B8"}}>{st.countries.size} countries</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,0.42)"}}>{st.countries.size} countries</div>
                   </div>
                 </div>
               );
@@ -620,17 +623,17 @@ function Dashboard(){
                 value={search}
                 onChange={e=>setSearch(e.target.value)}
                 placeholder="🔍  Search name, university, or faculty..."
-                style={{flex:"1 1 220px",padding:"9px 14px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(255,255,255,0.85)",fontSize:13,outline:"none",color:"#1E293B",transition:"border 0.2s,box-shadow 0.2s"}}
+                style={{flex:"1 1 220px",padding:"9px 14px",borderRadius:10,border:"1.5px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.07)",fontSize:13,outline:"none",color:"rgba(255,255,255,0.06)",transition:"border 0.2s,box-shadow 0.2s"}}
               />
-              <select value={schoolFilter} onChange={e=>setSchoolFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(238,242,255,0.9)",fontSize:12,cursor:"pointer",color:"#475569",outline:"none"}}>
+              <select value={schoolFilter} onChange={e=>setSchoolFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.07)",fontSize:12,cursor:"pointer",color:"rgba(255,255,255,0.65)",outline:"none"}}>
                 <option value="All">All Schools</option>
                 {uniqueSchools.map(s=><option key={s} value={s}>{s}</option>)}
               </select>
-              <select value={countryFilter} onChange={e=>setCountryFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(238,242,255,0.9)",fontSize:12,cursor:"pointer",color:"#475569",outline:"none"}}>
+              <select value={countryFilter} onChange={e=>setCountryFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.07)",fontSize:12,cursor:"pointer",color:"rgba(255,255,255,0.65)",outline:"none"}}>
                 <option value="All">All Countries</option>
                 {byCountry.map(([c])=><option key={c} value={c}>{CF[c]||""} {c}</option>)}
               </select>
-              <select value={yearFilter} onChange={e=>setYearFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(238,242,255,0.9)",fontSize:12,cursor:"pointer",color:"#475569",outline:"none"}}>
+              <select value={yearFilter} onChange={e=>setYearFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.07)",fontSize:12,cursor:"pointer",color:"rgba(255,255,255,0.65)",outline:"none"}}>
                 <option value="All">All Years</option>
                 {uniqueYears.map(y=><option key={y} value={y}>{y}</option>)}
               </select>
@@ -638,7 +641,7 @@ function Dashboard(){
                 <button onClick={()=>{setSearch("");setSchoolFilter("All");setCountryFilter("All");setYearFilter("All");}} style={{padding:"9px 14px",borderRadius:10,border:"1.5px solid #FCA5A5",background:"rgba(254,242,242,0.9)",fontSize:12,cursor:"pointer",color:"#DC2626",fontWeight:600}}>✕ Clear</button>
               )}
             </div>
-            <div style={{fontSize:12,color:"#94A3B8",marginBottom:12,fontWeight:500}}>{filteredAlumni.length} of {data.length} alumni</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.42)",marginBottom:12,fontWeight:500}}>{filteredAlumni.length} of {data.length} alumni</div>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {filteredAlumni.map((d,i)=>{
                 const sc=SC[d.school]||"#6366F1";
@@ -646,12 +649,12 @@ function Dashboard(){
                 return (
                   <div key={i} className="alumni-row" style={{...card,padding:"11px 16px",borderLeft:`3px solid ${sc}`,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                     <div style={{flex:"1 1 160px",minWidth:0}}>
-                      <div style={{fontWeight:600,fontSize:13,color:"#0F172A",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.name}</div>
-                      <div style={{fontSize:11,color:"#94A3B8",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.faculty||"—"}</div>
+                      <div style={{fontWeight:600,fontSize:13,color:"#ffffff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.name}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,0.42)",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.faculty||"—"}</div>
                     </div>
                     <div style={{flex:"1 1 160px",minWidth:0}}>
-                      <div style={{fontSize:13,fontWeight:500,color:"#1E293B",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.uni}</div>
-                      <div style={{fontSize:11,color:"#94A3B8",marginTop:1}}>{CF[d.country]||"🌐"} {d.country}</div>
+                      <div style={{fontSize:13,fontWeight:500,color:"rgba(255,255,255,0.06)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.uni}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,0.42)",marginTop:1}}>{CF[d.country]||"🌐"} {d.country}</div>
                     </div>
                     <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
                       <span style={{padding:"2px 9px",borderRadius:10,background:`${sc}15`,color:sc,fontSize:11,fontWeight:600,border:`1px solid ${sc}25`}}>{d.school}</span>
@@ -662,7 +665,7 @@ function Dashboard(){
                 );
               })}
               {filteredAlumni.length===0&&(
-                <div style={{textAlign:"center",padding:"48px 0",color:"#94A3B8",fontSize:14}}>No alumni match your filters.</div>
+                <div style={{textAlign:"center",padding:"48px 0",color:"rgba(255,255,255,0.42)",fontSize:14}}>No alumni match your filters.</div>
               )}
             </div>
           </div>
