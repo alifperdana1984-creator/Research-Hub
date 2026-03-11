@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eduversal Research Hub | Top University Alumni</title>
+<script src="firebase-config.js"></script>
+<script>
+  if (!window.ENV) window.ENV = {
+    FIREBASE_API_KEY:            "__FIREBASE_API_KEY__",
+    FIREBASE_AUTH_DOMAIN:        "__FIREBASE_AUTH_DOMAIN__",
+    FIREBASE_PROJECT_ID:         "__FIREBASE_PROJECT_ID__",
+    FIREBASE_STORAGE_BUCKET:     "__FIREBASE_STORAGE_BUCKET__",
+    FIREBASE_MESSAGING_SENDER_ID:"__FIREBASE_MESSAGING_SENDER_ID__",
+    FIREBASE_APP_ID:             "__FIREBASE_APP_ID__",
+  };
+</script>
+<script type="module" src="auth-guard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(150deg,#EEF2FF 0%,#F1F5FE 40%,#E8F4FD 75%,#F0FDF4 100%) fixed;background-attachment:fixed}
+#back-btn{
+  position:fixed;top:14px;left:16px;z-index:9999;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;
+  background:rgba(15,23,42,0.85);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;
+  color:#fff;font-size:13px;font-weight:500;
+  text-decoration:none;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  transition:background 0.2s;
+}
+#back-btn:hover{background:rgba(15,23,42,0.97);}
+#back-btn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+.stat-tile{transition:transform .18s,box-shadow .18s;cursor:default;}
+.stat-tile:hover{transform:translateY(-5px) scale(1.03);box-shadow:0 10px 28px rgba(0,0,0,0.13)!important;}
+
+.pill-btn{transition:transform .12s,box-shadow .12s!important;}
+.pill-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.18)!important;}
+
+.tab-btn{transition:color .15s,background .15s!important;}
+.tab-btn:hover{background:rgba(59,130,246,.07)!important;color:#1D4ED8!important;border-radius:6px 6px 0 0;}
+
+.uni-card{transition:transform .18s,box-shadow .18s;}
+.uni-card:hover{transform:translateY(-4px);box-shadow:0 10px 32px rgba(99,102,241,0.14)!important;}
+
+.alumni-row{transition:transform .15s,box-shadow .15s;}
+.alumni-row:hover{transform:translateX(5px);box-shadow:0 5px 18px rgba(99,102,241,0.10)!important;}
+
+.school-block{transition:transform .15s,box-shadow .15s;}
+.school-block:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(99,102,241,0.12)!important;}
+
+.yr-bar{transition:filter .15s,transform .15s;transform-origin:bottom;cursor:pointer;}
+.yr-bar:hover{filter:brightness(1.15) saturate(1.2);transform:scaleY(1.06);}
+
+input:focus,select:focus{border-color:#6366F1!important;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
+</style>
+</head>
+<body>
+<a id="back-btn" href="index.html">
+  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  Research Hub
+</a>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+// [year, name, school, university, qsRank2026|null, country, faculty]
+const RAW = [
+[2007,"Abdurakhman Muhyiddin","Pribadi Depok","Monash University",36,"Australia","Chemical Engineering"],
+[2008,"Fitra Rianto","Fatih Putra","Duke University",null,"United States","Medical Doctor"],
+[2008,"Rizka Mulyawan","Fatih Putra","Monash University",36,"Australia","Teknik Kimia"],
+[2008,"Nur Dhani Hendranastiti","Semesta","Durham University",null,"United Kingdom","Islamic Financial"],
+[2009,"Abdul Mubdi Masbar Rus","Fatih Putra","Monash University",36,"Australia","Teknik Elektro"],
+[2009,"Yosheph Yang","Kharisma Bangsa","KAIST",53,"South Korea","Aerospace Engineering"],
+[2009,"Nur Chaeriyah Chaeruddin Ganto","Pribadi Bandung","Imperial College London",null,"United Kingdom","Bioengineering And Biomedical Engineering"],
+[2009,"Muchammad Faris","Semesta","Monash University",36,"Australia","Bisnis Commerce"],
+[2009,"Anita Purba Nilam Hapsari","Semesta","Imperial College London",null,"United Kingdom","Biomedical Engineering"],
+[2011,"Bagaspati Wasi","Pribadi Depok","Kyoto University",57,"Japan","Teknik Sipil"],
+[2011,"Indah Sri Wahyuningtyas","Semesta","Kyoto University",57,"Japan","Civil Engineering"],
+[2012,"Yusrin Zata Lini","Semesta","Tsinghua University",null,"China","Public Policy And Management In International Development"],
+[2013,"Dewi Goldea Amanina Sapoetra","Kharisma Bangsa","University of Manchester",null,"United Kingdom","Innovation Management And Entrepreneurship"],
+[2013,"Elza Firdiani Sofia","Kharisma Bangsa","Tohoku University",null,"Japan","Kimia"],
+[2013,"Nisrina Nuramalia Fathina","Kharisma Bangsa","University of Illinois at Urbana-Champaign",70,"United States","Technology Management"],
+[2013,"Rhogerry Deshycka","Pribadi Bandung","Massachusetts Institute of Technology (MIT)",null,"United States","Biologycal Engineering"],
+[2013,"Mirfat Bahrudin Mansyur","Pribadi Bandung","The University of Warwick",null,"United Kingdom","Innovation And Entrepreneurship"],
+[2013,"Marwa","Semesta","University of Cambridge",null,"United Kingdom","Development Planning Unit"],
+[2014,"Alief Moulana","Pribadi Bandung","Massachusetts Institute of Technology (MIT)",null,"United States","Biologi (komputasi imunologi)"],
+[2014,"Muhammad Fauzan Ramadhani","Semesta","Monash University",36,"Australia","Teknik Informatika"],
+[2014,"Muhammad Ridwan Dzikrurrokhim","Sragen","Seoul National University",null,"South Korea","Teknik Geologi"],
+[2015,"Syamsul Ma'Arif Putera Ukhrawi","Banua","Monash University",36,"Australia","Engineering Science"],
+[2015,"Muhamad Hasan Yudha Darma","Pribadi Bandung","Monash University",36,"Australia","Ekonomic"],
+[2015,"Maulinda Kusumawardani","Pribadi Bandung","Tohoku University",null,"Japan","Kimia"],
+[2016,"Ekapaksi Wisnumurti","Kesatuan Bangsa","University of Bern",null,"Switzerland","Molecular Biology"],
+[2016,"Intan Furqona Trisnaningrum","Kesatuan Bangsa","Monash University",36,"Australia","Hubungan Internasional"],
+[2016,"Anargya Afif Adly","Kharisma Bangsa","Monash University",36,"Australia","Bisnis"],
+[2016,"Muhammad Naufal Winarto","Kharisma Bangsa","Tohoku University",null,"Japan","Mech & Aero Engineering"],
+[2016,"Ryza Rynazal","Pribadi Bandung","Tokyo Institute of Technology",null,"Japan","Bioinformatika"],
+[2017,"Muhammad Alfiyandy Hariansyah","Kesatuan Bangsa","Tohoku University",null,"Japan","Aerospace Engineering"],
+[2017,"Atika Nur Rochmah","Semesta","Tohoku University",null,"Japan","Advanced Molecular Chemistry"],
+[2017,"Ahmad Fariz Al Hazmi","Semesta","University of Malaya",58,"Malaysia","Interior Design"],
+[2018,"Hanif Ainurrizqi Aryadi","Kesatuan Bangsa","Tohoku University",null,"Japan","Information Science"],
+[2019,"Alfian Edgar Tjandra","Kharisma Bangsa","Harvard University",null,"United States","Mathematics & Computer Science"],
+[2019,"Rizal Nurfikri","Pribadi Bandung","University of Groningen",null,"Netherlands","International Relations And International Organizations"],
+[2019,"Zhahna Maharani","Pribadi Bandung","The University of Western Australia (UWA)",77,"Australia","Biomedical Science - Neuroscience"],
+[2019,"Geunta Al Farabi","Pribadi Depok","Monash University",36,"Australia","Teknik Sipil"],
+[2019,"Talitha Putri","Semesta","Tokyo Institute of Technology",null,"Japan","Teknik Mesin"],
+[2020,"Ardia Kansha Daniswara","Kesatuan Bangsa","King's College London",null,"United Kingdom","Business"],
+[2020,"Jordan Fariz Yudhistira","Kesatuan Bangsa","Monash University",36,"Australia","Business and Economics"],
+[2020,"Maxzelsto Zanmag Rozzaq","Kesatuan Bangsa","Monash University",36,"Australia","Business and Economics"],
+[2020,"Arwinda Nurul Izza","Kharisma Bangsa","Monash University",36,"Australia","Science"],
+[2020,"Raja Dishafnya Achadi","Kharisma Bangsa","National University of Singapore",8,"Singapore","Computer"],
+[2020,"Fadgham Ghani Azizi","Kharisma Bangsa","Monash University",36,"Australia","Computer Science"],
+[2020,"Jembar Tahta Aunillah","Cahaya Rancamaya","University of Malaya",58,"Malaysia","Sport and Exercise Science"],
+[2021,"Muhammad Rizky Ramadhan","Cahaya Rancamaya","The University of Western Australia (UWA)",77,"Australia","Computer Science"],
+[2021,"Billie Hartanto","Kesatuan Bangsa","Nanyang Technological University",12,"Singapore","Engineering"],
+[2021,"Aisyah Rifa Fadhilah","Kharisma Bangsa","University of British Columbia",40,"Canada","STEI"],
+[2021,"Daffa Aydan Suwandha","Kharisma Bangsa","Curtin University",null,"Australia","Engineering"],
+[2021,"Darrel Cavana Mahiatha","Kharisma Bangsa","Curtin University",null,"Australia","Engineering"],
+[2021,"Farrel Dwireswara Salim","Kharisma Bangsa","National University of Singapore",8,"Singapore","Science, Computing"],
+[2021,"Ilham Suryawan Rahman","Kharisma Bangsa","Hong Kong University of Science and Technology",44,"Hong Kong","Engineering"],
+[2021,"Kevin Fawwaz Rahadian","Kharisma Bangsa","Curtin University",null,"Australia","Engineering"],
+[2021,"Mohammad Adhimas Rikat","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Engineering"],
+[2021,"Muhammad Rafi Adzikra","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Engineering"],
+[2021,"Muhammad Raja Dzulhijjah Jauhari","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Engineering"],
+[2021,"Nicholas Jimmy Alden","Kharisma Bangsa","National University of Singapore",8,"Singapore","Science"],
+[2021,"Rajendra Nashifuddin Alhakim","Kharisma Bangsa","The University of Manchester",null,"United Kingdom","Engineering"],
+[2021,"Stevan Gerard Gunawan","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","School of Computing"],
+[2021,"Alima Berylda Aneira","Pribadi Bandung","University of Manchester",null,"United Kingdom","Department of Chemical Engineering and Analytical Science"],
+[2021,"Bimo Zahwan Hariri","Pribadi Depok","RWTH Aachen University",null,"Germany","Mathematics, Computer Science & Natural Sciences"],
+[2021,"Muhammad Haramain Asyi Emirryan","Pribadi Depok","University of Glasgow",null,"United Kingdom","Computer Science"],
+[2021,"Rahadian Swastika Adyatama","Semesta","Tohoku University",null,"Japan","Mechanical Aerospace Engineering"],
+[2022,"Muhammad Mikail Rais","Cahaya Rancamaya","Nanyang Technological University",12,"Singapore","Engineering"],
+[2022,"Davin Bunjamin","Fatih Putra","Zhejiang University",null,"China","Bahasa"],
+[2022,"M. Hazel Variansyah","Kesatuan Bangsa","University of Illinois at Urbana-Champaign",70,"United States","Grainger College of Engineering"],
+[2022,"Stevany Syarofatul Aini","Kesatuan Bangsa","The Hong Kong Polytechnic University",null,"Hong Kong","Biotechnology, Food Safety, and Chemical Engineering"],
+[2022,"Unzila Kaylina Renita Rahma","Kesatuan Bangsa","Nanyang Technological University",12,"Singapore","Banking and Finance"],
+[2022,"Althaaf Syaikha Nuhaad","Kesatuan Bangsa","University of British Columbia",40,"Canada","Electrical Engineering"],
+[2022,"Nagata Parama Aptana","Kesatuan Bangsa","University of Toronto",29,"Canada","Computer Science"],
+[2022,"Pandu Raditya Rohman","Kesatuan Bangsa","Monash University",36,"Australia","Nanotechnology"],
+[2022,"Charisma Pramudya Rusdiyanto","Kesatuan Bangsa","University of British Columbia",40,"Canada","Applied Science"],
+[2022,"Ayesha Rida Izzati","Kesatuan Bangsa","University of British Columbia",40,"Canada","Applied Science"],
+[2022,"Durrotul Salma","Kesatuan Bangsa","University of British Columbia",40,"Canada","Environmental Science"],
+[2022,"Fawziya Khalisa Dewi","Kesatuan Bangsa","University of British Columbia",40,"Canada","Environmental Science"],
+[2022,"Nara Tazkia Larasati","Kesatuan Bangsa","University of British Columbia",40,"Canada","Environmental Science"],
+[2022,"Kgs Fakhri Rasyiid","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Science"],
+[2022,"Muhammad Alif Anshari","Kharisma Bangsa","National University of Singapore",8,"Singapore","Business"],
+[2022,"Shielda Kamilia Hidajat","Kharisma Bangsa","National University of Singapore",8,"Singapore","Science"],
+[2022,"Rizky Anatasha Halim","Kharisma Bangsa","Monash University",36,"Australia","Biomedical Science"],
+[2022,"Arkayuga Pramasajjana Gunawan","Pribadi Bandung","University of New South Wales",20,"Australia","Computer Science"],
+[2022,"Igo Ilham Allgivary","Pribadi Bandung","University of Melbourne",null,"Australia","Engineering"],
+[2022,"Muhammad Adam Nurkholis","Pribadi Bandung","Nanyang Technological University",12,"Singapore","School of Civil and Environmental Engineering"],
+[2022,"Syifa Alifia Anindita","Pribadi Bandung","Wageningen University & Research",153,"Netherlands","Agrotechnology and Food Sciences"],
+[2022,"Vavan Farizzaman","Pribadi Bandung","University of British Columbia",40,"Canada","Science"],
+[2022,"Alden Izza Prasetyo","Pribadi Depok","Monash University",36,"Australia","Information Technology"],
+[2022,"Naufal Adityo","Pribadi Depok","University of Toronto",29,"Canada","Computer Science"],
+[2022,"Ahmad Yasin","Semesta","University of Melbourne",null,"Australia","School of Computing & IS"],
+[2022,"Danikha Nabil Zelina","Semesta","University of Technology Sydney",96,"Australia","Fakultas Teknik"],
+[2022,"Ewangga Patrianada","Semesta","University of Illinois at Urbana-Champaign",70,"United States","Engineering"],
+[2022,"Raisha Adilla Maharani","TNA Fatih","University of Toronto",29,"Canada","Saintek"],
+[2022,"Vanessa Gabriela Kwok","TNA Fatih","University of Toronto",29,"Canada","Saintek"],
+[2022,"Afif Izuddin Siddik","Pribadi Depok","University of Malaya",58,"Malaysia","Computer Science and Information Technology"],
+[2023,"M. Dzamir Alfarizi","Fatih Putra","Monash University",36,"Malaysia","Business and Commerce"],
+[2023,"Mirqaal Haaris Rizal","Fatih Putra","Monash University",36,"Malaysia","Business and Commerce"],
+[2023,"Afifah Salma A","Kesatuan Bangsa","University of New South Wales",20,"Australia","Engineering"],
+[2023,"Aydinahasna Huwaida Aziz","Kesatuan Bangsa","Nanyang Technological University",12,"Singapore","School of Chemistry, Chemical Engineering and Biotechnology"],
+[2023,"Danar Abiyoga Prakosa","Kesatuan Bangsa","University of New South Wales",20,"Australia","Engineering"],
+[2023,"Ragil Faiz K","Kesatuan Bangsa","Wageningen University & Research",153,"Netherlands","Environmental Sciences"],
+[2023,"Reyhan Adhiguna Pamungkas","Kesatuan Bangsa","University of British Columbia",40,"Canada","Science Program"],
+[2023,"Abhiesta Sheva Alfaru","Kesatuan Bangsa","Monash University",36,"Australia","Civil And Structural Engineering"],
+[2023,"Anindya Zahra Nugrahningrum","Kesatuan Bangsa","Monash University",36,"Australia","Pharmaceutical Science"],
+[2023,"Mutiara Zulaimatul Nabila","Kesatuan Bangsa","University of Toronto",29,"Canada","Neuroscience"],
+[2023,"Raiessa Sharfa Rosse","Kesatuan Bangsa","Monash University",36,"Australia","Arsitektur"],
+[2023,"Rayna Shafa Azahrah","Kesatuan Bangsa","Monash University",36,"Australia","Biomedical"],
+[2023,"Ariel Sakke Tira","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Engineering"],
+[2023,"Axel Giovanni Hartanto","Kharisma Bangsa","National University of Singapore",8,"Singapore","Arts and Science"],
+[2023,"Farah Fakhirah Khairunnisa","Kharisma Bangsa","The University of Sydney",25,"Australia","Faculty of Science"],
+[2023,"Farrassyifa Fuad Salim","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Engineering"],
+[2023,"Melisa Lee","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Engineering"],
+[2023,"Muhamad Nabil Alhanif","Kharisma Bangsa","University of British Columbia",40,"Canada","Applied Science"],
+[2023,"Muhammad Amadeus Ihsan Candra","Kharisma Bangsa","National University of Singapore",8,"Singapore","Ekonomi"],
+[2023,"Muhammad Faris Aulia","Kharisma Bangsa","Monash University",36,"Australia","Information Technology"],
+[2023,"Muhammad Fathurrahman Nataatmadja","Kharisma Bangsa","Monash University",36,"Australia","Chemistry"],
+[2023,"Firza Pradipta Atalla","Kharisma Bangsa","Monash University",36,"Australia","Computer Science"],
+[2023,"Luthfi Bima Putra","Kharisma Bangsa","KAIST",53,"South Korea","Data Science"],
+[2023,"Mahmoud Ahmadinejad","Kharisma Bangsa","Monash University",36,"Australia","International Relations"],
+[2023,"Rafie Azfa Zakya","Kharisma Bangsa","Monash University",36,"Australia","Computer Science"],
+[2023,"Fayrizcha Mentariku Arnaz","Kharisma Bangsa","Monash University",36,"Australia","Biomedical Science"],
+[2023,"Mazaya Faiza Azelia","Kharisma Bangsa","University of Queensland",42,"Australia","Food Technology"],
+[2023,"Almira Syaviqa Tumei Abram","Pribadi Bandung","Newcastle University",null,"United Kingdom","Business"],
+[2023,"Fikri Ghifari Hanifah","Pribadi Bandung","Nanyang Technological University",12,"Singapore","College of Science, Asian School of the Environment"],
+[2023,"Hilman Akbar Wiraatmaja","Pribadi Bandung","Monash University",36,"Australia","Engineering"],
+[2023,"Muhammad Aqila","Pribadi Bandung","Monash University",36,"Australia","Engineering"],
+[2023,"Muhammad Rizky Arif Rahman","Pribadi Bandung","The University of Western Australia (UWA)",77,"Australia","Engineering"],
+[2023,"Rosyad Zulfikar Akbari","Pribadi Bandung","Nanyang Technological University",12,"Singapore","Science"],
+[2023,"Tanzi Lutpi Alip","Pribadi Bandung","Zhejiang University",null,"China","Business School"],
+[2023,"Yomori Achiza","Pribadi Bandung","KAIST",53,"South Korea","Computer Science"],
+[2023,"Kenneth Samuel Gunawan","Pribadi Depok","University of Technology Sydney",96,"Australia","Computer Science"],
+[2023,"Muhammad Suryadeva","Pribadi Depok","University of Toronto",29,"Canada","Mathematical and Physical Sciences"],
+[2023,"Anayallah Rampak Mayesha","Cahaya Rancamaya","University of Malaya",58,"Malaysia","Information System"],
+[2023,"Yousef O M Y H Boodai","Kharisma Bangsa","University of Malaya",58,"Malaysia","Business and Management"],
+[2024,"Muhammad Ilham Alfarisi","Cahaya Rancamaya","National University of Singapore",8,"Singapore","College of Sciences and Humanities"],
+[2024,"Faldi Atharasda","Cahaya Rancamaya","KU Leuven",60,"Belgium","Business Administration"],
+[2024,"Farel Zakwan Andarya","Cahaya Rancamaya","The University of Sydney",25,"Australia","Computer Science"],
+[2024,"Muhammad Arif Khalfani Ismail","Fatih Putra","Stanford University",3,"United States","Teknik Elektro"],
+[2024,"Revael Pramudya Yudisthira","Kesatuan Bangsa","The University of Sydney",25,"Australia",""],
+[2024,"Isyaya Zahir","Kesatuan Bangsa","Monash University",36,"Australia",""],
+[2024,"Naurah Nafisah","Kesatuan Bangsa","University of British Columbia",40,"Canada",""],
+[2024,"Irfannesa Jesse Chandraningtyas","Kesatuan Bangsa","University of Queensland",42,"Australia",""],
+[2024,"Felicia Grace Angelyn Ferdianto","Kesatuan Bangsa","National University of Singapore",8,"Singapore",""],
+[2024,"Aurelia Tara","Kesatuan Bangsa","University of Toronto",29,"Canada",""],
+[2024,"Muhammad Luthfi Putra Pratama","Kesatuan Bangsa","Monash University",36,"Australia",""],
+[2024,"Jedidia Suksmatatya Husono","Kesatuan Bangsa","Yonsei University",50,"South Korea","Economics"],
+[2024,"Latif Anwar","Kesatuan Bangsa","University of Toronto",29,"Canada",""],
+[2024,"Annabelle Qetsyah Putri Setyawan","Kharisma Bangsa","Nanyang Technological University",12,"Singapore",""],
+[2024,"Andias Alfitra Santoso","Kharisma Bangsa","University of Illinois at Urbana-Champaign",70,"United States",""],
+[2024,"M. Azraf","Kharisma Bangsa","Monash University",36,"Australia",""],
+[2024,"Ahmad Fikri Azhari","Kharisma Bangsa","Nanyang Technological University",12,"Singapore",""],
+[2024,"Nektarina Puspita Melati","Kharisma Bangsa","Wageningen University & Research",153,"Netherlands",""],
+[2024,"Audwi Putri Revania","Kharisma Bangsa","National University of Singapore",8,"Singapore",""],
+[2024,"Hayrunnisa Nur Cil","Kharisma Bangsa","Nanyang Technological University",12,"Singapore",""],
+[2024,"Aryan Khayri Ferdiansyah","Kharisma Bangsa","University of New South Wales",20,"Australia",""],
+[2024,"Teuku Arkansyah Ali","Kharisma Bangsa","University of Illinois at Urbana-Champaign",70,"United States",""],
+[2024,"Nadine Fathiyya Susanto","Kharisma Bangsa","University of British Columbia",40,"Canada",""],
+[2024,"Kalila Putri Syamsurianto","Kharisma Bangsa","University of California, Berkeley",17,"United States",""],
+[2024,"Ahmad Hasib Haidar","Kharisma Bangsa","Hong Kong University of Science and Technology",44,"Hong Kong",""],
+[2024,"Anak Agung Gde Krisna Kesumawijaya","Kharisma Bangsa","The Hong Kong Polytechnic University",54,"Hong Kong",""],
+[2024,"Danish Muhammad Putra Amiftama","Kharisma Bangsa","Monash University",36,"Australia","Bachelor of Law"],
+[2024,"Muhammad Ababiel Alief Anbara","Kharisma Bangsa","KU Leuven",60,"Belgium","Bachelor of Engineering"],
+[2024,"Muhammad Azraf Putra Repol","Kharisma Bangsa","Monash University",36,"Australia","Bachelor of Engineering"],
+[2024,"Rayhan Satrio Adi Nurdjaman","Pribadi Bandung","National University of Singapore",8,"Singapore",""],
+[2024,"Rafa Hazwan Abqary Andriansyah","Pribadi Bandung","University of British Columbia",40,"Canada",""],
+[2024,"Faiq Haydar Dzikrullah Satriawan","Pribadi Bandung","Monash University",36,"Australia",""],
+[2024,"Farel Ahmad Azzikri","Pribadi Bandung","KAIST",53,"South Korea",""],
+[2024,"Ben Imran Caesarian","Pribadi Depok","University of California, Berkeley",17,"United States",""],
+[2024,"Ai Kaga Naufal Abiyyu Najah","Semesta","Nanyang Technological University",12,"Singapore",""],
+[2024,"Faira Nahla Ophelia","Semesta","Kyoto University",57,"Japan","Education"],
+[2024,"Muhammad Sudais Al Hafizh","Fatih Putra","University of Malaya",58,"Malaysia","Economy and Business"],
+[2024,"Dhia Muhammad Rafif Idroos","Kharisma Bangsa","University of Malaya",58,"Malaysia","Engineering"],
+[2024,"Muhammad Fadlan Asy-Syaddad","Kharisma Bangsa","University of Malaya",58,"Malaysia","Science"],
+[2024,"Muhammad Rafi Widyatama","Pribadi Bandung","University of Malaya",58,"Malaysia","Engineering"],
+[2025,"Baruna Adi Sanjaya","Cahaya Rancamaya","National University of Singapore",8,"Singapore","Chemical Engineering"],
+[2025,"Fauzi Kemal Maulidi","Cahaya Rancamaya","The Chinese University of Hong Kong",32,"Hong Kong","Computational Data Science"],
+[2025,"Khaindra Akmal Dhiya Putra","Cahaya Rancamaya","The Chinese University of Hong Kong",32,"Hong Kong","Information Engineering"],
+[2025,"Narendra Aditya Tanoto","Cahaya Rancamaya","Cornell University",16,"United States","Environmental and Civil Engineering"],
+[2025,"Randy Athalla Ryansha","Cahaya Rancamaya","University of British Columbia",40,"Canada","Applied Science Engineering"],
+[2025,"Faruq Al Farishy","Fatih Putra","University of New South Wales",20,"Australia","Computer Science"],
+[2025,"Muhammad Zawil Wafa Al Hafizh","Fatih Putra","Hong Kong University of Science and Technology",44,"Hong Kong","Computer Science"],
+[2025,"Devine Iryana Putri","Kesatuan Bangsa","University of New South Wales",20,"Australia","Business Commerce"],
+[2025,"Dzaky Aulia Fadhil","Kesatuan Bangsa","Monash University",36,"Australia","Bachelor of Computer Science Advanced (Honours)"],
+[2025,"Firas Fairuz Zaman","Kesatuan Bangsa","The University of Sydney",25,"Australia","Bachelor of Engineering"],
+[2025,"Hanif Achdan Pietoyo","Kesatuan Bangsa","University of Toronto",29,"Canada","Co-op Computer Science"],
+[2025,"Mutiara Hasnatul Jannah","Kesatuan Bangsa","University of Toronto",29,"Canada","International Relations"],
+[2025,"Najla Hanifah Khairunnisa","Kesatuan Bangsa","University of Toronto",29,"Canada","Studies in Social Sciences"],
+[2025,"Naura Atika Khairani","Kesatuan Bangsa","Monash University",36,"Australia","Environmental Engineering"],
+[2025,"Qurrotu Aini Nur Amalina","Kesatuan Bangsa","Monash University",36,"Australia","Environmental Engineering"],
+[2025,"Razan Farabi Ihsan","Kesatuan Bangsa","University of Malaya",58,"Malaysia","Psychology"],
+[2025,"Alisha Clea Candra","Kharisma Bangsa","Nanyang Technological University",12,"Singapore","Art Design Media"],
+[2025,"Allendra Ghifarayyan Anandyka","Kharisma Bangsa","The University of Hong Kong",11,"Hong Kong","Psychology"],
+[2025,"Alya Mukhbitah","Kharisma Bangsa","University of Malaya",58,"Malaysia","Electrical"],
+[2025,"Fakhri Musyaffa Ariyanto","Kharisma Bangsa","University of Toronto",29,"Canada","Material Engineering"],
+[2025,"Husna Hapstari Puspa Kinanti","Kharisma Bangsa","The University of Hong Kong",11,"Hong Kong","Ekonomi"],
+[2025,"Jasper Rexx Putra Cakra","Kharisma Bangsa","National University of Singapore",8,"Singapore","Humanities and Sciences"],
+[2025,"Khairunnisa Anjani Asmaulya","Kharisma Bangsa","University of Malaya",58,"Malaysia","Biotechnology"],
+[2025,"Prabu Andhika Adrian","Kharisma Bangsa","Monash University",36,"Australia","Psychology and Science"],
+[2025,"Praditya Farell Raffa Faadilah","Kharisma Bangsa","Purdue University",88,"United States","Artificial Intelligence"],
+[2025,"Rakha Mahardika","Kharisma Bangsa","National University of Singapore",8,"Singapore","Engineering"],
+[2025,"Razan Muhammad Rahman","Kharisma Bangsa","University of New South Wales",20,"Australia","Computer Science"],
+[2025,"Reischya Annisa Aishyara Puteri Soepeno","Kharisma Bangsa","Korea University",61,"South Korea","Food Science"],
+[2025,"Ringgas Nityo Sampurno","Kharisma Bangsa","The Hong Kong Polytechnic University",54,"Hong Kong","Mechanical Engineering"],
+[2025,"Sakha Diva Baadilla","Kharisma Bangsa","Monash University",36,"Australia","Media and Communication"],
+[2025,"Teuku Naraya Malikiandra","Kharisma Bangsa","Hong Kong University of Science and Technology",44,"Hong Kong","Biotechnology and Business"],
+[2025,"Basima Nisrina Nashinta","Pribadi Bandung","University of Toronto",29,"Canada","Biomedical"],
+[2025,"Dentya River Phoenix Al Kautsar","Pribadi Bandung","Monash University",36,"Australia","Computer Engineering"],
+[2025,"Derizal Muhammad Razan","Pribadi Bandung","Monash University",36,"Australia","Bachelor of Engineering (Honours)"],
+[2025,"Dwi Rahma Dyah Maharani","Pribadi Bandung","The University of Western Australia (UWA)",77,"Australia","Public Health"],
+[2025,"Muhammad Ali Al Musthafa Peranginangin","Pribadi Bandung","University of Malaya",58,"Malaysia","Bachelor of Science in Chemistry"],
+[2025,"Muhammad Rafif Faiz Rusyaman","Pribadi Bandung","The University of Western Australia (UWA)",77,"Australia","Commerce Marketing"],
+[2025,"Nabilah Nisrina Matondang","Pribadi Bandung","Monash University",36,"Australia","International Relations"],
+[2025,"Najwa Azizah Ismail","Pribadi Bandung","The University of Hong Kong",11,"Hong Kong","Biomedical Engineering"],
+[2025,"Naomi Izmahani Gumilar","Pribadi Bandung","University of Malaya",58,"Malaysia","Urban and Regional Planning"],
+[2025,"Natasya Khansa Fatiha","Pribadi Bandung","Nanyang Technological University",12,"Singapore","Chemical and Biomolecular Engineering"],
+[2025,"Nazanine Alifa Nousafarin","Pribadi Bandung","University of California, Berkeley",17,"United States","Cognitive Science"],
+[2025,"Adzelia Chintavi Nararya","Pribadi Depok","University of Malaya",58,"Malaysia","Science in Environmental Management"],
+[2025,"Aisyah Azzahra","Pribadi Depok","The University of Hong Kong",11,"Hong Kong","Psychology"],
+[2025,"Anastasia Khayla Azka Saputri","Pribadi Depok","University of Malaya",58,"Malaysia","Biotechnology"],
+[2025,"Daffa Putera Athailah Yudianto","Pribadi Depok","University of Malaya",58,"Malaysia","Environmental Management"],
+[2025,"Melchior Rajaanta Mangoting","Pribadi Depok","Kyoto University",57,"Japan","Civil Energy and Environmental Engineering"],
+[2025,"Muhammad Amsyar Mumtaz","Pribadi Depok","University of Malaya",58,"Malaysia","Mechanical Engineering"],
+[2025,"Muhammad Ghulam Mumtaz Rahmawan","Pribadi Depok","The Hong Kong Polytechnic University",54,"Hong Kong","Applied Mathematics and Finance Analytics"],
+[2025,"Chandra Adriana Malik","Semesta","Monash University",36,"Australia","Engineering"],
+[2025,"Patricia Febrice Wichard","TNA Fatih","University of Technology Sydney",96,"Australia","Communication Design"],
+[2025,"Syifa Salsabila","TNA Fatih","University of Malaya",58,"Malaysia","Business"],
+];
+
+const SCHOOL_NORM={"Fatih Putra":"Fatih","TNA Fatih":"Fatih","Sragen":"Sragen BBS","Banua":"SMAN Banua"};
+const SC={"Kesatuan Bangsa":"#1D4ED8","Kharisma Bangsa":"#059669","Semesta":"#7C3AED","Pribadi Bandung":"#D97706","Pribadi Depok":"#EA580C","Cahaya Rancamaya":"#DB2777","Fatih":"#0D9488","Sragen BBS":"#65A30D","SMAN Banua":"#0891B2"};
+const CF={"Australia":"🇦🇺","United States":"🇺🇸","United Kingdom":"🇬🇧","Singapore":"🇸🇬","Japan":"🇯🇵","Canada":"🇨🇦","Malaysia":"🇲🇾","South Korea":"🇰🇷","Hong Kong":"🇭🇰","Netherlands":"🇳🇱","China":"🇨🇳","Germany":"🇩🇪","Belgium":"🇧🇪","Switzerland":"🇨🇭","France":"🇫🇷"};
+
+function qsBadge(rank){
+  if(!rank)return null;
+  if(rank<=10)return{bg:"linear-gradient(135deg,#FEF9C3,#FDE68A)",color:"#92400E",border:"#FCD34D"};
+  if(rank<=25)return{bg:"linear-gradient(135deg,#DBEAFE,#BFDBFE)",color:"#1E40AF",border:"#93C5FD"};
+  if(rank<=50)return{bg:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",color:"#4338CA",border:"#A5B4FC"};
+  if(rank<=100)return{bg:"linear-gradient(135deg,#F3E8FF,#E9D5FF)",color:"#6D28D9",border:"#C4B5FD"};
+  return{bg:"#F1F5F9",color:"#475569",border:"#CBD5E1"};
+}
+
+function Dashboard(){
+  const [tab,setTab]=useState("overview");
+  const [countryFilter,setCountryFilter]=useState("All");
+  const [schoolFilter,setSchoolFilter]=useState("All");
+  const [search,setSearch]=useState("");
+  const [yearFilter,setYearFilter]=useState("All");
+  const [sortUni,setSortUni]=useState("count");
+
+  const data=useMemo(()=>RAW.map(r=>({
+    year:r[0],name:r[1],
+    school:SCHOOL_NORM[r[2]]||r[2],
+    uni:r[3],rank:r[4],
+    country:r[5]==="Hongkong"?"Hong Kong":r[5],
+    faculty:r[6]||""
+  })),[]);
+
+  const byUni=useMemo(()=>{
+    const m={};
+    data.forEach(d=>{
+      if(!m[d.uni])m[d.uni]={count:0,rank:d.rank,country:d.country,alumni:[]};
+      m[d.uni].count++;
+      if(!m[d.uni].rank&&d.rank)m[d.uni].rank=d.rank;
+      m[d.uni].alumni.push(d);
+    });
+    const entries=Object.entries(m);
+    if(sortUni==="rank")return entries.sort((a,b)=>(a[1].rank||999)-(b[1].rank||999));
+    return entries.sort((a,b)=>b[1].count-a[1].count);
+  },[data,sortUni]);
+
+  const bySchool=useMemo(()=>{
+    const m={};
+    data.forEach(d=>{
+      if(!m[d.school])m[d.school]={count:0,unis:new Set(),countries:new Set(),alumni:[],topUnis:{}};
+      m[d.school].count++;
+      m[d.school].unis.add(d.uni);
+      m[d.school].countries.add(d.country);
+      m[d.school].alumni.push(d);
+      m[d.school].topUnis[d.uni]=(m[d.school].topUnis[d.uni]||0)+1;
+    });
+    return Object.entries(m).sort((a,b)=>b[1].count-a[1].count);
+  },[data]);
+
+  const byCountry=useMemo(()=>{
+    const m={};
+    data.forEach(d=>{m[d.country]=(m[d.country]||0)+1;});
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  },[data]);
+
+  const byYear=useMemo(()=>{
+    const m={};
+    data.forEach(d=>{m[d.year]=(m[d.year]||0)+1;});
+    return Object.entries(m).sort((a,b)=>a[0]-b[0]);
+  },[data]);
+
+  const filteredAlumni=useMemo(()=>data.filter(d=>{
+    if(schoolFilter!=="All"&&d.school!==schoolFilter)return false;
+    if(countryFilter!=="All"&&d.country!==countryFilter)return false;
+    if(yearFilter!=="All"&&d.year!==parseInt(yearFilter))return false;
+    if(search){
+      const q=search.toLowerCase();
+      if(!d.name.toLowerCase().includes(q)&&!d.uni.toLowerCase().includes(q)&&!d.faculty.toLowerCase().includes(q))return false;
+    }
+    return true;
+  }),[data,schoolFilter,countryFilter,yearFilter,search]);
+
+  const uniqueSchools=[...new Set(data.map(d=>d.school))].sort();
+  const uniqueYears=[...new Set(data.map(d=>d.year))].sort((a,b)=>b-a);
+  const maxUni=byUni.length?byUni[0][1].count:1;
+  const maxCountry=byCountry.length?byCountry[0][1]:1;
+  const maxYear=byYear.length?Math.max(...byYear.map(([,v])=>v)):1;
+  const bestRank=Math.min(...data.filter(d=>d.rank).map(d=>d.rank));
+
+  const card={background:"rgba(255,255,255,0.82)",backdropFilter:"blur(12px)",border:"1px solid rgba(203,213,234,0.7)",borderRadius:12,padding:20,boxShadow:"0 4px 16px rgba(99,102,241,0.09),0 1px 4px rgba(0,0,0,0.05)"};
+
+  return (
+    <div style={{fontFamily:"'Segoe UI',system-ui,sans-serif",background:"transparent",minHeight:"100vh",color:"#1E293B"}}>
+
+      {/* ── HEADER ── */}
+      <div style={{background:"linear-gradient(135deg,rgba(255,255,255,0.95) 0%,rgba(238,242,255,0.92) 50%,rgba(224,236,252,0.90) 100%)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(196,212,240,0.8)",padding:"24px 36px 0",boxShadow:"0 4px 20px rgba(99,102,241,0.10)"}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:12,marginBottom:20}}>
+          <div>
+            <div style={{fontSize:11,letterSpacing:"0.2em",color:"#3B82F6",textTransform:"uppercase",fontWeight:600,marginBottom:6}}>Eduversal Partner Schools</div>
+            <h1 style={{fontSize:26,fontWeight:700,color:"#0F172A",margin:0}}>🎓 Top University Alumni</h1>
+            <p style={{color:"#94A3B8",fontSize:13,margin:"5px 0 0"}}>{data.length} alumni · {byUni.length} universities · {byCountry.length} countries · 2007–2025</p>
+          </div>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:0}}>
+          {[
+            {label:"Total Alumni",value:data.length,color:"#2563EB",bg:"linear-gradient(135deg,#DBEAFE,#EEF2FF)",icon:"🎓"},
+            {label:"Universities",value:byUni.length,color:"#7C3AED",bg:"linear-gradient(135deg,#EDE9FE,#DDD6FE)",icon:"🏛️"},
+            {label:"Countries",value:byCountry.length,color:"#059669",bg:"linear-gradient(135deg,#D1FAE5,#A7F3D0)",icon:"🌏"},
+            {label:"Best QS Rank",value:`#${bestRank}`,color:"#B45309",bg:"linear-gradient(135deg,#FEF9C3,#FDE68A)",icon:"⭐"},
+          ].map(k=>(
+            <div key={k.label} className="stat-tile" style={{background:k.bg,borderTop:`3px solid ${k.color}`,borderRadius:"0 0 8px 8px",padding:"14px 16px",textAlign:"center"}}>
+              <div style={{fontSize:22}}>{k.icon}</div>
+              <div style={{fontSize:26,fontWeight:700,color:k.color}}>{k.value}</div>
+              <div style={{fontSize:11,color:"#64748B",fontWeight:500,marginTop:2}}>{k.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{display:"flex",gap:0,marginTop:16}}>
+          {[["overview","📊 Overview"],["universities","🏛️ Universities"],["byschool","🏫 By School"],["alumni","👤 Alumni"]].map(([id,label])=>(
+            <button key={id} onClick={()=>setTab(id)} className="tab-btn" style={{padding:"10px 20px",border:"none",borderBottom:`2.5px solid ${tab===id?"#1D4ED8":"transparent"}`,background:"transparent",color:tab===id?"#1D4ED8":"#64748B",cursor:"pointer",fontSize:13,fontWeight:tab===id?600:400,transition:"all 0.15s"}}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── CONTENT ── */}
+      <div style={{padding:"24px 36px"}}>
+
+        {/* OVERVIEW */}
+        {tab==="overview"&&(
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+
+            {/* Top Universities bar */}
+            <div style={{...card,gridColumn:"1 / -1"}}>
+              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:18}}>TOP UNIVERSITIES BY ALUMNI COUNT</div>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {byUni.slice(0,12).map(([uni,st],i)=>{
+                  const badge=qsBadge(st.rank);
+                  const pct=(st.count/maxUni)*100;
+                  return (
+                    <div key={uni} style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{width:20,fontSize:11,color:"#94A3B8",textAlign:"right",flexShrink:0,fontWeight:600}}>{i+1}</div>
+                      <div style={{flex:"0 0 220px",fontSize:13,fontWeight:500,color:"#1E293B",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{uni}</div>
+                      <div style={{fontSize:12,color:"#94A3B8",flexShrink:0,width:60,textAlign:"right"}}>{CF[st.country]||"🌐"}</div>
+                      {badge
+                        ?<span style={{padding:"2px 8px",borderRadius:8,background:badge.bg,color:badge.color,border:`1px solid ${badge.border}`,fontSize:11,fontWeight:700,flexShrink:0,width:60,textAlign:"center"}}>#{st.rank}</span>
+                        :<span style={{width:60,flexShrink:0}}/>
+                      }
+                      <div style={{flex:1,height:8,background:"#DDE5F5",borderRadius:4,overflow:"hidden"}}>
+                        <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#3B82F6,#6366F1)",borderRadius:4,transition:"width 0.6s ease"}}/>
+                      </div>
+                      <div style={{width:30,textAlign:"right",fontSize:14,fontWeight:700,color:"#1D4ED8",flexShrink:0}}>{st.count}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Countries */}
+            <div style={card}>
+              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>DESTINATION COUNTRIES</div>
+              {byCountry.map(([country,count])=>(
+                <div key={country} style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}>
+                  <span style={{fontSize:18,flexShrink:0,width:28}}>{CF[country]||"🌐"}</span>
+                  <div style={{flex:1,fontSize:13,color:"#334155"}}>{country}</div>
+                  <div style={{width:110,height:7,background:"#DDE5F5",borderRadius:4,flexShrink:0,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${(count/maxCountry)*100}%`,background:"linear-gradient(90deg,#10B981,#059669)",borderRadius:4}}/>
+                  </div>
+                  <div style={{width:28,textAlign:"right",fontSize:13,fontWeight:600,color:"#475569",flexShrink:0}}>{count}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Year trend */}
+            <div style={card}>
+              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>ALUMNI BY GRADUATION YEAR</div>
+              <div style={{display:"flex",alignItems:"flex-end",gap:4,height:200}}>
+                {byYear.map(([year,count])=>{
+                  const h=(count/maxYear)*175;
+                  return (
+                    <div key={year} className="yr-bar" title={`${year}: ${count} alumni`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                      <div style={{fontSize:9,color:"#94A3B8",fontWeight:600}}>{count}</div>
+                      <div style={{width:"100%",height:h,background:"linear-gradient(180deg,#818CF8,#4F46E5)",borderRadius:"3px 3px 0 0"}}/>
+                      <div style={{fontSize:8,color:"#94A3B8",transform:"rotate(-45deg)",transformOrigin:"top center",marginTop:4,whiteSpace:"nowrap"}}>{year}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Schools */}
+            <div style={{...card,gridColumn:"1 / -1"}}>
+              <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>ALUMNI BY SCHOOL</div>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                {bySchool.map(([school,st])=>{
+                  const sc=SC[school]||"#6366F1";
+                  return (
+                    <div key={school} style={{flex:"1 1 180px",background:`linear-gradient(135deg,${sc}12,${sc}06)`,border:`1px solid ${sc}30`,borderRadius:10,padding:"14px 16px"}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                        <div style={{fontSize:13,fontWeight:700,color:"#0F172A"}}>{school}</div>
+                        <div style={{fontSize:20,fontWeight:800,color:sc}}>{st.count}</div>
+                      </div>
+                      <div style={{display:"flex",gap:10}}>
+                        <div style={{textAlign:"center"}}>
+                          <div style={{fontSize:15,fontWeight:700,color:sc}}>{st.unis.size}</div>
+                          <div style={{fontSize:10,color:"#94A3B8"}}>Universities</div>
+                        </div>
+                        <div style={{textAlign:"center"}}>
+                          <div style={{fontSize:15,fontWeight:700,color:sc}}>{st.countries.size}</div>
+                          <div style={{fontSize:10,color:"#94A3B8"}}>Countries</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* UNIVERSITIES */}
+        {tab==="universities"&&(
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:16}}>
+              <div style={{display:"flex",gap:6,flex:1,flexWrap:"wrap"}}>
+                {["All",...byCountry.map(([c])=>c)].map(c=>(
+                  <button key={c} onClick={()=>setCountryFilter(c)} className="pill-btn" style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${countryFilter===c?"#1D4ED8":"#C7D2E8"}`,background:countryFilter===c?"#1D4ED8":"rgba(238,242,255,0.8)",color:countryFilter===c?"white":"#475569",cursor:"pointer",fontSize:12,fontWeight:countryFilter===c?600:400,transition:"all 0.15s"}}>
+                    {c==="All"?"🌐 All":`${CF[c]||""} ${c}`}
+                  </button>
+                ))}
+              </div>
+              <div style={{display:"flex",gap:6,flexShrink:0}}>
+                <button onClick={()=>setSortUni("count")} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${sortUni==="count"?"#6366F1":"#C7D2E8"}`,background:sortUni==="count"?"#6366F1":"rgba(238,242,255,0.8)",color:sortUni==="count"?"white":"#475569",cursor:"pointer",fontSize:12,fontWeight:sortUni==="count"?600:400}}>Most Alumni</button>
+                <button onClick={()=>setSortUni("rank")} style={{padding:"5px 12px",borderRadius:20,border:`1px solid ${sortUni==="rank"?"#6366F1":"#C7D2E8"}`,background:sortUni==="rank"?"#6366F1":"rgba(238,242,255,0.8)",color:sortUni==="rank"?"white":"#475569",cursor:"pointer",fontSize:12,fontWeight:sortUni==="rank"?600:400}}>Best QS Rank</button>
+              </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+              {byUni.filter(([,st])=>countryFilter==="All"||st.country===countryFilter).map(([uni,st])=>{
+                const badge=qsBadge(st.rank);
+                const schoolCounts={};
+                st.alumni.forEach(a=>{schoolCounts[a.school]=(schoolCounts[a.school]||0)+1;});
+                return (
+                  <div key={uni} className="uni-card" style={{...card,padding:"16px 18px"}}>
+                    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8,marginBottom:12}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:700,color:"#0F172A",lineHeight:1.35,marginBottom:4}}>{uni}</div>
+                        <div style={{fontSize:12,color:"#64748B"}}>{CF[st.country]||"🌐"} {st.country}</div>
+                      </div>
+                      {badge&&(
+                        <div style={{flexShrink:0,textAlign:"center"}}>
+                          <div style={{padding:"4px 10px",borderRadius:10,background:badge.bg,color:badge.color,border:`1px solid ${badge.border}`,fontSize:12,fontWeight:800}}>#{st.rank}</div>
+                          <div style={{fontSize:9,color:"#94A3B8",marginTop:2}}>QS 2026</div>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:10}}>
+                      {Object.entries(schoolCounts).sort((a,b)=>b[1]-a[1]).map(([sch,cnt])=>(
+                        <span key={sch} style={{padding:"2px 8px",borderRadius:10,background:`${SC[sch]||"#6366F1"}15`,color:SC[sch]||"#6366F1",fontSize:11,border:`1px solid ${SC[sch]||"#6366F1"}25`,fontWeight:600}}>{sch} ×{cnt}</span>
+                      ))}
+                    </div>
+                    <div style={{paddingTop:8,borderTop:"1px solid #EEF2F8",fontSize:12,color:"#94A3B8"}}>{st.count} alumni</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* BY SCHOOL */}
+        {tab==="byschool"&&(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16}}>
+            {bySchool.map(([school,st])=>{
+              const sc=SC[school]||"#6366F1";
+              const topUniList=Object.entries(st.topUnis).sort((a,b)=>b[1]-a[1]).slice(0,6);
+              return (
+                <div key={school} className="school-block" style={{...card,borderLeft:`4px solid ${sc}`,padding:"18px 20px"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+                    <div>
+                      <div style={{fontSize:17,fontWeight:700,color:"#0F172A"}}>{school}</div>
+                      <div style={{fontSize:12,color:"#94A3B8",marginTop:3}}>{st.count} alumni · {st.unis.size} universities · {st.countries.size} countries</div>
+                    </div>
+                    <div style={{width:44,height:44,borderRadius:"50%",background:`${sc}18`,border:`2px solid ${sc}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:800,color:sc}}>{st.count}</div>
+                  </div>
+
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontSize:11,fontWeight:600,color:"#94A3B8",letterSpacing:"0.06em",marginBottom:8}}>TOP UNIVERSITIES</div>
+                    {topUniList.map(([uni,cnt],j)=>{
+                      const uniInfo=byUni.find(([u])=>u===uni);
+                      const rank=uniInfo?uniInfo[1].rank:null;
+                      const badge=qsBadge(rank);
+                      return (
+                        <div key={uni} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,padding:"4px 0",borderBottom:j<topUniList.length-1?"1px dashed #EEF2F8":"none"}}>
+                          <div style={{width:16,fontSize:11,color:"#94A3B8",fontWeight:700}}>{j+1}</div>
+                          <div style={{flex:1,fontSize:12,color:"#1E293B",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{uni}</div>
+                          {badge&&<span style={{padding:"1px 7px",borderRadius:6,background:badge.bg,color:badge.color,fontSize:10,fontWeight:700,flexShrink:0}}>#{rank}</span>}
+                          <div style={{fontSize:12,fontWeight:700,color:sc,flexShrink:0}}>×{cnt}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{paddingTop:10,borderTop:"1px solid #EEF2F8",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                      {[...st.countries].map(c=>(
+                        <span key={c} title={c} style={{fontSize:16}}>{CF[c]||"🌐"}</span>
+                      ))}
+                    </div>
+                    <div style={{fontSize:11,color:"#94A3B8"}}>{st.countries.size} countries</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ALUMNI DIRECTORY */}
+        {tab==="alumni"&&(
+          <div>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:14}}>
+              <input
+                value={search}
+                onChange={e=>setSearch(e.target.value)}
+                placeholder="🔍  Search name, university, or faculty..."
+                style={{flex:"1 1 220px",padding:"9px 14px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(255,255,255,0.85)",fontSize:13,outline:"none",color:"#1E293B",transition:"border 0.2s,box-shadow 0.2s"}}
+              />
+              <select value={schoolFilter} onChange={e=>setSchoolFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(238,242,255,0.9)",fontSize:12,cursor:"pointer",color:"#475569",outline:"none"}}>
+                <option value="All">All Schools</option>
+                {uniqueSchools.map(s=><option key={s} value={s}>{s}</option>)}
+              </select>
+              <select value={countryFilter} onChange={e=>setCountryFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(238,242,255,0.9)",fontSize:12,cursor:"pointer",color:"#475569",outline:"none"}}>
+                <option value="All">All Countries</option>
+                {byCountry.map(([c])=><option key={c} value={c}>{CF[c]||""} {c}</option>)}
+              </select>
+              <select value={yearFilter} onChange={e=>setYearFilter(e.target.value)} style={{padding:"9px 12px",borderRadius:10,border:"1.5px solid #C7D2E8",background:"rgba(238,242,255,0.9)",fontSize:12,cursor:"pointer",color:"#475569",outline:"none"}}>
+                <option value="All">All Years</option>
+                {uniqueYears.map(y=><option key={y} value={y}>{y}</option>)}
+              </select>
+              {(search||schoolFilter!=="All"||countryFilter!=="All"||yearFilter!=="All")&&(
+                <button onClick={()=>{setSearch("");setSchoolFilter("All");setCountryFilter("All");setYearFilter("All");}} style={{padding:"9px 14px",borderRadius:10,border:"1.5px solid #FCA5A5",background:"rgba(254,242,242,0.9)",fontSize:12,cursor:"pointer",color:"#DC2626",fontWeight:600}}>✕ Clear</button>
+              )}
+            </div>
+            <div style={{fontSize:12,color:"#94A3B8",marginBottom:12,fontWeight:500}}>{filteredAlumni.length} of {data.length} alumni</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {filteredAlumni.map((d,i)=>{
+                const sc=SC[d.school]||"#6366F1";
+                const badge=qsBadge(d.rank);
+                return (
+                  <div key={i} className="alumni-row" style={{...card,padding:"11px 16px",borderLeft:`3px solid ${sc}`,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                    <div style={{flex:"1 1 160px",minWidth:0}}>
+                      <div style={{fontWeight:600,fontSize:13,color:"#0F172A",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.name}</div>
+                      <div style={{fontSize:11,color:"#94A3B8",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.faculty||"—"}</div>
+                    </div>
+                    <div style={{flex:"1 1 160px",minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:500,color:"#1E293B",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.uni}</div>
+                      <div style={{fontSize:11,color:"#94A3B8",marginTop:1}}>{CF[d.country]||"🌐"} {d.country}</div>
+                    </div>
+                    <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
+                      <span style={{padding:"2px 9px",borderRadius:10,background:`${sc}15`,color:sc,fontSize:11,fontWeight:600,border:`1px solid ${sc}25`}}>{d.school}</span>
+                      {badge&&<span style={{padding:"2px 8px",borderRadius:8,background:badge.bg,color:badge.color,border:`1px solid ${badge.border}`,fontSize:11,fontWeight:700}}>#{d.rank}</span>}
+                      <span style={{padding:"2px 8px",borderRadius:10,background:"linear-gradient(135deg,#DBEAFE,#C7D9FA)",color:"#2563EB",fontSize:11,fontWeight:600}}>{d.year}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {filteredAlumni.length===0&&(
+                <div style={{textAlign:"center",padding:"48px 0",color:"#94A3B8",fontSize:14}}>No alumni match your filters.</div>
+              )}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Dashboard />);
+</script>
+</body>
+</html>

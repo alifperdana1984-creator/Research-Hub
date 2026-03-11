@@ -288,6 +288,7 @@
       }
 
       .card:nth-child(1) { animation-delay: 0.1s; }
+      .card:nth-child(2) { animation-delay: 0.2s; }
 
       @keyframes cardFadeIn {
         from { opacity: 0; transform: translateY(40px) scale(0.95); }
@@ -459,6 +460,9 @@
       }
       .card[data-theme="violet"] {
         --card-accent: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      }
+      .card[data-theme="emerald"] {
+        --card-accent: linear-gradient(135deg, #059669 0%, #0d9488 100%);
       }
 
       /* ── Footer ── */
@@ -1003,6 +1007,43 @@
                 <div class="stat">
                   <span class="stat-value">Live</span>
                   <span class="stat-label">Tracker</span>
+                </div>
+              </div>
+            </div>
+          </a>
+          <!-- Top University Alumni -->
+          <a href="universities.html" class="card" data-theme="emerald">
+            <div class="card-image">
+              <svg class="card-image-placeholder" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+              </svg>
+              <span class="card-badge">Alumni</span>
+            </div>
+            <div class="card-content">
+              <div class="card-arrow">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                </svg>
+              </div>
+              <h3 class="card-title">Top University Alumni</h3>
+              <p class="card-description">
+                Explore where Eduversal partner school graduates study worldwide — top-ranked universities across 15 countries tracked since 2007.
+              </p>
+              <div class="card-stats">
+                <div class="stat">
+                  <span class="stat-value">225+</span>
+                  <span class="stat-label">Alumni</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">50+</span>
+                  <span class="stat-label">Universities</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">15</span>
+                  <span class="stat-label">Countries</span>
                 </div>
               </div>
             </div>
