@@ -375,7 +375,7 @@ function Dashboard(){
       if(!d.name.toLowerCase().includes(q)&&!d.uni.toLowerCase().includes(q)&&!d.faculty.toLowerCase().includes(q))return false;
     }
     return true;
-  }),[data,schoolFilter,countryFilter,yearFilter,search]);
+  }).sort((a,b)=>b.year-a.year),[data,schoolFilter,countryFilter,yearFilter,search]);
 
   const uniqueSchools=[...new Set(data.map(d=>d.school))].sort();
   const uniqueYears=[...new Set(data.map(d=>d.year))].sort((a,b)=>b-a);
@@ -472,9 +472,9 @@ function Dashboard(){
             {/* Year trend */}
             <div style={card}>
               <div style={{fontSize:12,fontWeight:600,color:"#94A3B8",letterSpacing:"0.08em",marginBottom:16}}>ALUMNI BY GRADUATION YEAR</div>
-              <div style={{display:"flex",alignItems:"flex-end",gap:4,height:200}}>
+              <div style={{display:"flex",alignItems:"flex-end",gap:4,height:310}}>
                 {byYear.map(([year,count])=>{
-                  const h=(count/maxYear)*175;
+                  const h=(count/maxYear)*280;
                   return (
                     <div key={year} className="yr-bar" title={`${year}: ${count} alumni`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
                       <div style={{fontSize:9,color:"#94A3B8",fontWeight:600}}>{count}</div>
