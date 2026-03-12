@@ -18,6 +18,7 @@ const cleanUrls = {
   "universities.html": "universities",
   "placement.html":    "placement",
   "scholarships.html": "scholarships",
+  "teachers.html":     "teachers",
 };
 
 function rewriteLinks(content) {
@@ -64,7 +65,7 @@ for (const [file, slug] of Object.entries(cleanUrls)) {
 // ── resources/ folder ─────────────────────────────────────────────
 const resDir = path.join("dist", "resources");
 if (!fs.existsSync(resDir)) fs.mkdirSync(resDir);
-const resFiles = ["scholarship-data.json"];
+const resFiles = ["scholarship-data.json", "Teachers Database.xlsx"];
 for (const f of resFiles) {
   const src = path.join("resources", f);
   if (fs.existsSync(src)) {
