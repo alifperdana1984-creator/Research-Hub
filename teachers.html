@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%230a0a1a'/><circle cx='50' cy='42' r='18' fill='none' stroke='%2314b8a6' stroke-width='7'/><line x1='62' y1='55' x2='74' y2='70' stroke='%230d9488' stroke-width='7' stroke-linecap='round'/><circle cx='50' cy='42' r='7' fill='%2314b8a6'/></svg>">
+  <title>Eduversal Research Hub | Teachers Database</title>
+  <script src="firebase-config.js"></script>
+  <script>
+    if (!window.ENV) window.ENV = {
+      FIREBASE_API_KEY:            "__FIREBASE_API_KEY__",
+      FIREBASE_AUTH_DOMAIN:        "__FIREBASE_AUTH_DOMAIN__",
+      FIREBASE_PROJECT_ID:         "__FIREBASE_PROJECT_ID__",
+      FIREBASE_STORAGE_BUCKET:     "__FIREBASE_STORAGE_BUCKET__",
+      FIREBASE_MESSAGING_SENDER_ID:"__FIREBASE_MESSAGING_SENDER_ID__",
+      FIREBASE_APP_ID:             "__FIREBASE_APP_ID__",
+    };
+  </script>
+  <script type="module" src="auth-guard.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --teal:    #14b8a6;
+      --teal2:   #0d9488;
+      --cyan:    #06b6d4;
+      --indigo:  #6366f1;
+      --violet:  #8b5cf6;
+      --amber:   #f59e0b;
+      --emerald: #059669;
+      --rose:    #f43f5e;
+      --glass:   rgba(255,255,255,0.07);
+      --glass-b: rgba(255,255,255,0.11);
+      --text:    #ffffff;
+      --muted:   rgba(255,255,255,0.62);
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body {
+      font-family:'DM Sans',sans-serif;
+      background:linear-gradient(135deg,#0c0c0c 0%,#0a1628 100%);
+      min-height:100vh;
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    /* ── Background orbs ── */
+    .bg-orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:0.26;pointer-events:none;animation:orbf 20s ease-in-out infinite;}
+    .bg-orb-1{width:500px;height:500px;background:linear-gradient(135deg,#14b8a6,#0d9488);top:-150px;right:-100px;animation-delay:0s;}
+    .bg-orb-2{width:380px;height:380px;background:linear-gradient(135deg,#6366f1,#06b6d4);bottom:-80px;left:-80px;animation-delay:-8s;}
+    .bg-orb-3{width:260px;height:260px;background:linear-gradient(135deg,#8b5cf6,#14b8a6);top:45%;left:50%;animation-delay:-14s;}
+    @keyframes orbf{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(40px,-40px) scale(1.1);}}
+
+    /* ── Loading ── */
+    #loadingScreen{
+      position:fixed;inset:0;background:linear-gradient(135deg,#0c0c0c,#0a1628);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      z-index:9999;gap:1.25rem;
+    }
+    .spinner{width:48px;height:48px;border:3px solid rgba(20,184,166,0.2);border-top-color:#14b8a6;border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .spinner-text{font-size:0.9rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+
+    /* ── Nav ── */
+    nav{
+      position:sticky;top:0;z-index:100;
+      display:flex;align-items:center;gap:1rem;
+      padding:1rem 2rem;
+      background:rgba(10,10,26,0.7);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--glass-b);
+    }
+    .nav-back{
+      display:inline-flex;align-items:center;gap:0.5rem;
+      color:var(--muted);text-decoration:none;font-size:0.88rem;
+      transition:color 0.2s;
+    }
+    .nav-back:hover{color:var(--teal);}
+    .nav-back svg{width:16px;height:16px;fill:currentColor;}
+    .nav-title{
+      font-family:'Playfair Display',serif;
+      font-size:1.1rem;font-weight:600;
+      background:linear-gradient(135deg,#fff,#a7f3d0);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .nav-badge{
+      margin-left:auto;
+      padding:0.3rem 0.8rem;
+      background:rgba(20,184,166,0.12);
+      border:1px solid rgba(20,184,166,0.25);
+      border-radius:20px;
+      font-size:0.78rem;color:var(--teal);
+    }
+
+    /* ── Page header ── */
+    .page-header{
+      padding:3rem 2rem 2rem;
+      max-width:1300px;margin:0 auto;
+    }
+    .page-header h1{
+      font-family:'Playfair Display',serif;
+      font-size:clamp(2rem,4vw,3rem);font-weight:700;
+      background:linear-gradient(135deg,#ffffff,#ccfbf1 50%,#99f6e4);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      margin-bottom:0.5rem;
+    }
+    .page-header p{color:var(--muted);font-size:1rem;line-height:1.6;}
+
+    /* ── Main ── */
+    main{max-width:1300px;margin:0 auto;padding:0 2rem 4rem;}
+
+    /* ── Section title ── */
+    .section-title{
+      font-family:'Playfair Display',serif;
+      font-size:1.1rem;margin-bottom:1.25rem;
+      display:flex;align-items:center;gap:0.75rem;color:var(--muted);
+    }
+    .section-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--glass-b),transparent);}
+
+    /* ── KPI cards ── */
+    .kpi-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:1rem;margin-bottom:2.5rem;
+    }
+    .kpi{
+      background:var(--glass);border:1px solid var(--glass-b);
+      border-radius:16px;padding:1.25rem 1.5rem;
+      display:flex;flex-direction:column;gap:0.35rem;
+      position:relative;overflow:hidden;
+    }
+    .kpi::before{
+      content:"";position:absolute;top:0;left:0;right:0;height:2px;
+      background:var(--kpi-color, linear-gradient(90deg,var(--teal),var(--cyan)));
+    }
+    .kpi-value{font-size:1.9rem;font-weight:700;line-height:1;color:var(--text);}
+    .kpi-label{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+    .kpi-sub{font-size:0.8rem;color:var(--muted);margin-top:0.2rem;}
+
+    /* ── Charts grid ── */
+    .charts-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:1.5rem;
+      margin-bottom:2.5rem;
+    }
+    .chart-card{
+      background:var(--glass);border:1px solid var(--glass-b);
+      border-radius:20px;padding:1.5rem;
+    }
+    .chart-card.full{grid-column:1/-1;}
+    .chart-card h3{
+      font-size:0.9rem;font-weight:600;color:var(--muted);
+      text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1.25rem;
+    }
+    .chart-wrap{position:relative;height:240px;}
+    .chart-wrap.tall{height:300px;}
+
+    /* ── Cert badges ── */
+    .cert-grid{
+      display:flex;flex-wrap:wrap;gap:0.75rem;
+      margin-bottom:2.5rem;
+    }
+    .cert-badge{
+      display:flex;align-items:center;gap:0.6rem;
+      padding:0.65rem 1.1rem;
+      background:var(--glass);border:1px solid var(--glass-b);
+      border-radius:12px;
+    }
+    .cert-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    .cert-name{font-size:0.85rem;font-weight:600;}
+    .cert-count{font-size:0.85rem;color:var(--muted);}
+
+    /* ── Filters ── */
+    .filters{
+      display:flex;flex-wrap:wrap;gap:0.75rem;
+      margin-bottom:1.25rem;
+      align-items:center;
+    }
+    .filter-select, .search-input{
+      background:var(--glass);border:1px solid var(--glass-b);
+      color:var(--text);border-radius:10px;
+      padding:0.55rem 1rem;font-size:0.88rem;font-family:'DM Sans',sans-serif;
+      outline:none;transition:border-color 0.2s;
+    }
+    .filter-select:focus, .search-input:focus{border-color:var(--teal);}
+    .filter-select option{background:#0a1628;color:#fff;}
+    .search-input{min-width:220px;flex:1;}
+    .filter-select{cursor:pointer;}
+    .result-count{margin-left:auto;font-size:0.85rem;color:var(--muted);}
+
+    /* ── Table ── */
+    .table-wrap{
+      background:var(--glass);border:1px solid var(--glass-b);
+      border-radius:20px;overflow:hidden;
+      margin-bottom:3rem;
+    }
+    table{width:100%;border-collapse:collapse;}
+    thead{background:rgba(20,184,166,0.08);}
+    th{
+      padding:0.9rem 1rem;text-align:left;
+      font-size:0.75rem;font-weight:600;
+      color:var(--teal);text-transform:uppercase;letter-spacing:0.07em;
+      border-bottom:1px solid var(--glass-b);white-space:nowrap;
+    }
+    td{
+      padding:0.8rem 1rem;font-size:0.87rem;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      color:var(--text);vertical-align:middle;
+    }
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(20,184,166,0.04);}
+
+    .badge{
+      display:inline-block;padding:0.2rem 0.55rem;
+      border-radius:6px;font-size:0.72rem;font-weight:600;
+      white-space:nowrap;
+    }
+    .badge-teal{background:rgba(20,184,166,0.15);color:#5eead4;}
+    .badge-violet{background:rgba(99,102,241,0.15);color:#a5b4fc;}
+    .badge-amber{background:rgba(245,158,11,0.15);color:#fcd34d;}
+    .badge-rose{background:rgba(244,63,94,0.15);color:#fda4af;}
+    .badge-emerald{background:rgba(5,150,105,0.15);color:#6ee7b7;}
+    .badge-gray{background:rgba(255,255,255,0.08);color:var(--muted);}
+
+    .pagination{
+      display:flex;align-items:center;justify-content:center;gap:0.5rem;
+      padding:1rem;border-top:1px solid var(--glass-b);
+    }
+    .page-btn{
+      width:34px;height:34px;border-radius:8px;
+      background:var(--glass);border:1px solid var(--glass-b);
+      color:var(--text);cursor:pointer;font-size:0.85rem;
+      display:flex;align-items:center;justify-content:center;
+      transition:all 0.2s;
+    }
+    .page-btn:hover{border-color:var(--teal);color:var(--teal);}
+    .page-btn.active{background:var(--teal);border-color:var(--teal);color:#000;font-weight:700;}
+    .page-btn:disabled{opacity:0.3;cursor:default;}
+
+    /* ── Footer ── */
+    footer{text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;opacity:0.6;}
+
+    /* ── Responsive ── */
+    @media(max-width:900px){
+      .charts-grid{grid-template-columns:1fr;}
+      .chart-card.full{grid-column:auto;}
+    }
+    @media(max-width:600px){
+      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+      .page-header{padding:2rem 1rem 1rem;}
+      main{padding:0 1rem 3rem;}
+      nav{padding:0.75rem 1rem;}
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loadingScreen">
+    <div class="spinner"></div>
+    <span class="spinner-text">Loading Teachers Data…</span>
+  </div>
+
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <nav>
+    <a href="index.html" class="nav-back">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </a>
+    <span class="nav-title">Teachers Database</span>
+    <span class="nav-badge" id="navBadge">Loading…</span>
+  </nav>
+
+  <div class="page-header">
+    <h1>Teachers Database</h1>
+    <p>Workforce analytics across Eduversal partner schools — qualifications, experience, and certifications.</p>
+  </div>
+
+  <main>
+
+    <!-- KPI Cards -->
+    <h2 class="section-title">Overview</h2>
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi" style="--kpi-color:linear-gradient(90deg,#14b8a6,#06b6d4)">
+        <span class="kpi-value" id="kpiTotal">—</span>
+        <span class="kpi-label">Total Teachers</span>
+        <span class="kpi-sub" id="kpiSchools">— schools</span>
+      </div>
+      <div class="kpi" style="--kpi-color:linear-gradient(90deg,#8b5cf6,#6366f1)">
+        <span class="kpi-value" id="kpiFemale">—</span>
+        <span class="kpi-label">Female</span>
+        <span class="kpi-sub" id="kpiFemPct">—% of workforce</span>
+      </div>
+      <div class="kpi" style="--kpi-color:linear-gradient(90deg,#06b6d4,#6366f1)">
+        <span class="kpi-value" id="kpiNative">—</span>
+        <span class="kpi-label">Indonesian</span>
+        <span class="kpi-sub" id="kpiForeign">— international</span>
+      </div>
+      <div class="kpi" style="--kpi-color:linear-gradient(90deg,#f59e0b,#f97316)">
+        <span class="kpi-value" id="kpiMasters">—</span>
+        <span class="kpi-label">Master's+</span>
+        <span class="kpi-sub" id="kpiMastersPct">—% hold advanced degree</span>
+      </div>
+      <div class="kpi" style="--kpi-color:linear-gradient(90deg,#059669,#0d9488)">
+        <span class="kpi-value" id="kpiPermanent">—</span>
+        <span class="kpi-label">Permanent (PKWTT)</span>
+        <span class="kpi-sub" id="kpiPermanentPct">— of those with data</span>
+      </div>
+      <div class="kpi" style="--kpi-color:linear-gradient(90deg,#f43f5e,#f97316)">
+        <span class="kpi-value" id="kpiNUPTK">—</span>
+        <span class="kpi-label">NUPTK Certified</span>
+        <span class="kpi-sub" id="kpiPPG">— with PPG</span>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <h2 class="section-title">Breakdown</h2>
+    <div class="charts-grid">
+
+      <div class="chart-card">
+        <h3>Gender Distribution</h3>
+        <div class="chart-wrap"><canvas id="chartGender"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Nationality</h3>
+        <div class="chart-wrap"><canvas id="chartNat"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>School Level</h3>
+        <div class="chart-wrap"><canvas id="chartLevel"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Highest Degree</h3>
+        <div class="chart-wrap"><canvas id="chartDegree"></canvas></div>
+      </div>
+
+      <div class="chart-card full">
+        <h3>Top Schools by Teacher Count</h3>
+        <div class="chart-wrap tall"><canvas id="chartSchools"></canvas></div>
+      </div>
+
+      <div class="chart-card full">
+        <h3>Top Teaching Subjects</h3>
+        <div class="chart-wrap tall"><canvas id="chartSubjects"></canvas></div>
+      </div>
+
+      <div class="chart-card full">
+        <h3>Teachers by First Year of Teaching</h3>
+        <div class="chart-wrap"><canvas id="chartYear"></canvas></div>
+      </div>
+
+    </div>
+
+    <!-- Certifications -->
+    <h2 class="section-title">Certifications</h2>
+    <div class="cert-grid" id="certGrid"></div>
+
+    <!-- Table -->
+    <h2 class="section-title">All Teachers</h2>
+    <div class="filters">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name, school, or subject…">
+      <select class="filter-select" id="filterGender">
+        <option value="">All Genders</option>
+        <option>Male</option>
+        <option>Female</option>
+      </select>
+      <select class="filter-select" id="filterLevel">
+        <option value="">All Levels</option>
+      </select>
+      <select class="filter-select" id="filterSchool">
+        <option value="">All Schools</option>
+      </select>
+      <select class="filter-select" id="filterNat">
+        <option value="">All Nationalities</option>
+        <option>Native</option>
+        <option>Foreign</option>
+      </select>
+      <span class="result-count" id="resultCount">— teachers</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>School</th>
+            <th>Level</th>
+            <th>Subject</th>
+            <th>Degree</th>
+            <th>Nationality</th>
+            <th>Employment</th>
+            <th>1st Year Teaching</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>Eduversal Research Hub &nbsp;·&nbsp; Teachers Database 2025–2026</p>
+  </footer>
+
+<script>
+const SHEET = '25_26';
+const FILE  = 'resources/Teachers Database.xlsx';
+const PAGE_SIZE = 25;
+
+let allData = [];
+let filtered = [];
+let currentPage = 1;
+
+const CHART_DEFAULTS = {
+  color: 'rgba(255,255,255,0.7)',
+  borderColor: 'rgba(255,255,255,0.08)',
+  grid: 'rgba(255,255,255,0.06)',
+};
+
+Chart.defaults.color = CHART_DEFAULTS.color;
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+// ── Helpers ──────────────────────────────────────────────
+
+function shortDegree(d) {
+  if (!d) return 'N/A';
+  if (d.includes('Master') || d.includes('S2')) return "Master's (S2)";
+  if (d.includes('Bachelor') || d.includes('S1')) return "Bachelor's (S1)";
+  if (d.includes('Doctorate') || d.includes('Ph.D')) return 'Doctorate';
+  if (d.includes('High school')) return 'High School';
+  return d;
+}
+
+function empBadge(e) {
+  if (!e) return '<span class="badge badge-gray">N/A</span>';
+  if (e.includes('Permanent')) return '<span class="badge badge-emerald">PKWTT</span>';
+  if (e.includes('Fixed')) return '<span class="badge badge-amber">PKWT</span>';
+  return `<span class="badge badge-gray">${e}</span>`;
+}
+
+function genderBadge(g) {
+  if (g === 'Female') return '<span class="badge badge-violet">Female</span>';
+  if (g === 'Male')   return '<span class="badge badge-teal">Male</span>';
+  return '<span class="badge badge-gray">—</span>';
+}
+
+function natBadge(n) {
+  if (n === 'Native')  return '<span class="badge badge-teal">Indonesian</span>';
+  if (n === 'Foreign') return '<span class="badge badge-rose">International</span>';
+  return '<span class="badge badge-gray">—</span>';
+}
+
+function count(arr, key) {
+  const m = {};
+  arr.forEach(r => {
+    const v = r[key] || 'N/A';
+    m[v] = (m[v] || 0) + 1;
+  });
+  return m;
+}
+
+function topN(obj, n) {
+  return Object.entries(obj)
+    .filter(([k]) => k !== 'N/A' && k !== 'undefined')
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n);
+}
+
+function makeChart(id, cfg) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  return new Chart(ctx, cfg);
+}
+
+// ── Build charts ──────────────────────────────────────────
+
+function buildCharts(data) {
+  const palette = ['#14b8a6','#06b6d4','#6366f1','#8b5cf6','#f59e0b','#f97316','#f43f5e','#059669','#0891b2','#7c3aed'];
+
+  // Gender donut
+  const g = count(data, 'gender');
+  makeChart('chartGender', {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(g),
+      datasets: [{ data: Object.values(g), backgroundColor: ['#8b5cf6','#14b8a6'], borderWidth: 2, borderColor: '#0c0c0c' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+      }
+    }
+  });
+
+  // Nationality donut
+  const n = count(data, 'nationality');
+  makeChart('chartNat', {
+    type: 'doughnut',
+    data: {
+      labels: ['Indonesian','International'],
+      datasets: [{ data: [n['Native']||0, n['Foreign']||0], backgroundColor: ['#14b8a6','#f43f5e'], borderWidth: 2, borderColor: '#0c0c0c' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } } }
+    }
+  });
+
+  // Level bar
+  const lvlRaw = count(data, 'level');
+  const lvlTop = topN(lvlRaw, 8);
+  makeChart('chartLevel', {
+    type: 'bar',
+    data: {
+      labels: lvlTop.map(x => x[0]),
+      datasets: [{ data: lvlTop.map(x => x[1]), backgroundColor: palette, borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: CHART_DEFAULTS.grid }, ticks: { color: CHART_DEFAULTS.color } },
+        y: { grid: { display: false }, ticks: { color: CHART_DEFAULTS.color } }
+      }
+    }
+  });
+
+  // Degree bar
+  const degRaw = {};
+  data.forEach(r => {
+    const v = shortDegree(r.highest_degree);
+    degRaw[v] = (degRaw[v] || 0) + 1;
+  });
+  const degTop = Object.entries(degRaw).filter(([k]) => k !== 'N/A').sort((a,b)=>b[1]-a[1]);
+  makeChart('chartDegree', {
+    type: 'bar',
+    data: {
+      labels: degTop.map(x => x[0]),
+      datasets: [{ data: degTop.map(x => x[1]), backgroundColor: ['#14b8a6','#06b6d4','#8b5cf6','#f59e0b'], borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: CHART_DEFAULTS.grid }, ticks: { color: CHART_DEFAULTS.color } },
+        y: { grid: { display: false }, ticks: { color: CHART_DEFAULTS.color } }
+      }
+    }
+  });
+
+  // Schools bar
+  const schRaw = count(data, 'curr_school');
+  const schTop = topN(schRaw, 15);
+  makeChart('chartSchools', {
+    type: 'bar',
+    data: {
+      labels: schTop.map(x => x[0]),
+      datasets: [{ data: schTop.map(x => x[1]), backgroundColor: palette, borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: CHART_DEFAULTS.grid }, ticks: { color: CHART_DEFAULTS.color } },
+        y: { grid: { display: false }, ticks: { color: CHART_DEFAULTS.color, font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Subjects bar
+  const subjRaw = count(data, 'main_subject');
+  const subjTop = topN(subjRaw, 12);
+  makeChart('chartSubjects', {
+    type: 'bar',
+    data: {
+      labels: subjTop.map(x => x[0]),
+      datasets: [{ data: subjTop.map(x => x[1]), backgroundColor: palette, borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: CHART_DEFAULTS.grid }, ticks: { color: CHART_DEFAULTS.color } },
+        y: { grid: { display: false }, ticks: { color: CHART_DEFAULTS.color, font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Year trend line
+  const yrRaw = {};
+  data.forEach(r => {
+    if (r.first_year_teaching && r.first_year_teaching >= 2000) {
+      yrRaw[r.first_year_teaching] = (yrRaw[r.first_year_teaching] || 0) + 1;
+    }
+  });
+  const yrSorted = Object.entries(yrRaw).sort((a, b) => a[0] - b[0]);
+  makeChart('chartYear', {
+    type: 'line',
+    data: {
+      labels: yrSorted.map(x => x[0]),
+      datasets: [{
+        data: yrSorted.map(x => x[1]),
+        borderColor: '#14b8a6',
+        backgroundColor: 'rgba(20,184,166,0.1)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: '#14b8a6',
+        fill: true,
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: CHART_DEFAULTS.grid }, ticks: { color: CHART_DEFAULTS.color } },
+        y: { grid: { color: CHART_DEFAULTS.grid }, ticks: { color: CHART_DEFAULTS.color } }
+      }
+    }
+  });
+}
+
+// ── KPIs ──────────────────────────────────────────────────
+
+function buildKPIs(data) {
+  const total = data.length;
+  const schools = new Set(data.map(r => r.curr_school).filter(Boolean)).size;
+  const female = data.filter(r => r.gender === 'Female').length;
+  const native = data.filter(r => r.nationality === 'Native').length;
+  const foreign = data.filter(r => r.nationality === 'Foreign').length;
+  const masters = data.filter(r => r.highest_degree && (r.highest_degree.includes('Master') || r.highest_degree.includes('Doctorate'))).length;
+  const empData = data.filter(r => r.employment_status);
+  const permanent = data.filter(r => r.employment_status && r.employment_status.includes('Permanent')).length;
+  const nuptk = data.filter(r => r.nuptk === 'Yes').length;
+  const ppg = data.filter(r => r.ppg === 'Yes').length;
+
+  document.getElementById('kpiTotal').textContent = total.toLocaleString();
+  document.getElementById('kpiSchools').textContent = `${schools} schools`;
+  document.getElementById('kpiFemale').textContent = female.toLocaleString();
+  document.getElementById('kpiFemPct').textContent = `${Math.round(female/total*100)}% of workforce`;
+  document.getElementById('kpiNative').textContent = native.toLocaleString();
+  document.getElementById('kpiForeign').textContent = `${foreign} international`;
+  document.getElementById('kpiMasters').textContent = masters.toLocaleString();
+  document.getElementById('kpiMastersPct').textContent = `${Math.round(masters/total*100)}% hold advanced degree`;
+  document.getElementById('kpiPermanent').textContent = permanent.toLocaleString();
+  document.getElementById('kpiPermanentPct').textContent = empData.length ? `${Math.round(permanent/empData.length*100)}% of those with data` : '';
+  document.getElementById('kpiNUPTK').textContent = nuptk.toLocaleString();
+  document.getElementById('kpiPPG').textContent = `${ppg} with PPG`;
+  document.getElementById('navBadge').textContent = `${total} Teachers`;
+}
+
+// ── Certifications ────────────────────────────────────────
+
+function buildCerts(data) {
+  const certs = [
+    { name: 'NUPTK',                         key: 'nuptk',            color: '#14b8a6' },
+    { name: 'PPG',                            key: 'ppg',              color: '#06b6d4' },
+    { name: 'Guru Penggerak',                 key: 'guru_penggerak',   color: '#f59e0b' },
+  ];
+  const grid = document.getElementById('certGrid');
+  certs.forEach(c => {
+    const cnt = data.filter(r => r[c.key] === 'Yes').length;
+    const pct = Math.round(cnt / data.length * 100);
+    grid.innerHTML += `
+      <div class="cert-badge">
+        <span class="cert-dot" style="background:${c.color}"></span>
+        <span class="cert-name">${c.name}</span>
+        <span class="cert-count">${cnt} teachers (${pct}%)</span>
+      </div>`;
+  });
+}
+
+// ── Table ──────────────────────────────────────────────────
+
+function populateFilters(data) {
+  const levels  = [...new Set(data.map(r => r.level).filter(Boolean))].sort();
+  const schools = [...new Set(data.map(r => r.curr_school).filter(Boolean))].sort();
+
+  const lSel = document.getElementById('filterLevel');
+  levels.forEach(l => { lSel.innerHTML += `<option>${l}</option>`; });
+
+  const sSel = document.getElementById('filterSchool');
+  schools.forEach(s => { sSel.innerHTML += `<option>${s}</option>`; });
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const gender = document.getElementById('filterGender').value;
+  const level  = document.getElementById('filterLevel').value;
+  const school = document.getElementById('filterSchool').value;
+  const nat    = document.getElementById('filterNat').value;
+
+  filtered = allData.filter(r => {
+    if (gender && r.gender !== gender) return false;
+    if (level  && r.level  !== level)  return false;
+    if (school && r.curr_school !== school) return false;
+    if (nat    && r.nationality !== nat) return false;
+    if (search) {
+      const haystack = [r.name, r.curr_school, r.main_subject].join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+
+  currentPage = 1;
+  document.getElementById('resultCount').textContent = `${filtered.length} teachers`;
+  renderTable();
+}
+
+function renderTable() {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page  = filtered.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('tableBody');
+
+  tbody.innerHTML = page.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted);font-size:0.8rem">${start + i + 1}</td>
+      <td style="font-weight:500">${r.name || '—'}</td>
+      <td>${genderBadge(r.gender)}</td>
+      <td>${r.curr_school || '—'}</td>
+      <td><span class="badge badge-gray">${r.level || '—'}</span></td>
+      <td>${r.main_subject || '—'}</td>
+      <td style="font-size:0.82rem;color:var(--muted)">${shortDegree(r.highest_degree)}</td>
+      <td>${natBadge(r.nationality)}</td>
+      <td>${empBadge(r.employment_status)}</td>
+      <td style="color:var(--muted)">${r.first_year_teaching || '—'}</td>
+    </tr>`).join('');
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const pag = document.getElementById('pagination');
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+
+  const show = [];
+  for (let p = 1; p <= totalPages; p++) {
+    if (p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2) show.push(p);
+  }
+  let prev = null;
+  show.forEach(p => {
+    if (prev && p - prev > 1) html += `<span style="color:var(--muted);padding:0 0.25rem">…</span>`;
+    html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    prev = p;
+  });
+
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  pag.innerHTML = html;
+}
+
+function goPage(p) {
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderTable();
+  document.querySelector('.table-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Load Excel ────────────────────────────────────────────
+
+async function loadData() {
+  const resp = await fetch(FILE);
+  const buf  = await resp.arrayBuffer();
+  const wb   = XLSX.read(buf, { type: 'array' });
+  const ws   = wb.Sheets[SHEET];
+  const data = XLSX.utils.sheet_to_json(ws);
+
+  allData  = data;
+  filtered = data;
+
+  buildKPIs(data);
+  buildCerts(data);
+  buildCharts(data);
+  populateFilters(data);
+
+  document.getElementById('resultCount').textContent = `${data.length} teachers`;
+  renderTable();
+
+  // Wire up filters
+  ['searchInput','filterGender','filterLevel','filterSchool','filterNat']
+    .forEach(id => document.getElementById(id).addEventListener('input', applyFilters));
+
+  document.getElementById('loadingScreen').style.display = 'none';
+}
+
+// Wait for auth-guard authReady before loading data
+document.addEventListener('authReady', loadData);
+</script>
+</body>
+</html>
